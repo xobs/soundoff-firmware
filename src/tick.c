@@ -22,17 +22,19 @@
 
 #include "tick.h"
 
-volatile uint32_t __ticks = 0;
+static volatile uint32_t __ticks = 0;
 
 void sys_tick_handler(void)
 {
     __ticks++;
 }
 
-bool tick_setup(uint32_t tick_freq_hz) {
+bool tick_setup(uint32_t tick_freq_hz)
+{
     bool success = false;
 
-    if (systick_set_frequency(tick_freq_hz, rcc_ahb_frequency)) {
+    if (systick_set_frequency(tick_freq_hz, rcc_ahb_frequency))
+    {
         systick_clear();
         systick_interrupt_enable();
         success = true;
@@ -41,14 +43,17 @@ bool tick_setup(uint32_t tick_freq_hz) {
     return success;
 }
 
-void tick_start(void) {
+void tick_start(void)
+{
     systick_counter_enable();
 }
 
-void tick_stop(void) {
+void tick_stop(void)
+{
     systick_counter_disable();
 }
 
-uint32_t get_ticks(void) {
+uint32_t get_ticks(void)
+{
     return __ticks;
 }

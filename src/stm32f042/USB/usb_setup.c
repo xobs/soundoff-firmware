@@ -17,9 +17,7 @@
  */
 
 #include <libopencm3/stm32/rcc.h>
-#include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/syscfg.h>
-#include <libopencm3/stm32/st_usbfs.h>
 
 #include "USB/usb_setup.h"
 #include "config.h"

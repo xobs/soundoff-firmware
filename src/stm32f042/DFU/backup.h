@@ -19,7 +19,8 @@
 #ifndef BACKUP_H_INCLUDED
 #define BACKUP_H_INCLUDED
 
-enum BackupRegister {
+enum BackupRegister
+{
     BKP0 = 0,
     BKP1,
     BKP2,
@@ -30,7 +31,8 @@ enum BackupRegister {
 extern void backup_write(enum BackupRegister reg, uint32_t value);
 extern uint32_t backup_read(enum BackupRegister reg);
 
-enum ResetSource {
+enum ResetSource
+{
     RST_SRC_LPWR,
     RST_SRC_WWDG,
     RST_SRC_IWDG,

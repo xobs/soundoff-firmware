@@ -79,6 +79,24 @@ void clock_setup(void)
     rcc_set_usbclk_source(RCC_HSI48);
 }
 
+static void relay_power(bool on) {
+    if (on) {
+        gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO1);
+        // gpio_set(GPIOA, GPIO1);
+    } else {
+        gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO1);
+        // gpio_clear(GPIOA, GPIO1);
+    }
+}
+
+static void led_power(bool on) {
+    if (on) {
+        gpio_clear(GPIOB, GPIO1);
+    } else {
+        gpio_set(GPIOB, GPIO1);
+    }
+}
+
 void gpio_setup(void)
 {
 
@@ -86,77 +104,26 @@ void gpio_setup(void)
     rcc_periph_clock_enable(RCC_GPIOA);
     rcc_periph_clock_enable(RCC_GPIOB);
 
-    /* Setup LEDs as open-drain outputs */
-    gpio_set_output_options(GPIOA, GPIO_OTYPE_OD, GPIO_OSPEED_LOW,
-                            GPIO0 | GPIO1 | GPIO4);
+    /* Setup LED as an open-drain output */
+    gpio_set_output_options(GPIOB, GPIO_OTYPE_OD, GPIO_OSPEED_LOW, GPIO1);
+    gpio_mode_setup(GPIOB, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO1);
+    led_power(false);
 
-    gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE,
-                    GPIO0 | GPIO1 | GPIO4);
-}
-
-void led_bit(uint8_t position, bool state)
-{
-    uint32_t gpio = 0xFFFFFFFFU;
-    if (position == 0)
-    {
-        gpio = GPIO4;
-    }
-    else if (position == 1)
-    {
-        gpio = GPIO1;
-    }
-    else if (position == 2)
-    {
-        gpio = GPIO0;
-    }
-
-    if (gpio != 0xFFFFFFFFU)
-    {
-        if (state)
-        {
-            gpio_clear(GPIOA, gpio);
-        }
-        else
-        {
-            gpio_set(GPIOA, gpio);
-        }
-    }
-}
-
-void led_num(uint8_t value)
-{
-    if (value & 0x4)
-    {
-        gpio_clear(GPIOA, GPIO0);
-    }
-    else
-    {
-        gpio_set(GPIOA, GPIO0);
-    }
-    if (value & 0x2)
-    {
-        gpio_clear(GPIOA, GPIO1);
-    }
-    else
-    {
-        gpio_set(GPIOA, GPIO1);
-    }
-    if (value & 0x1)
-    {
-        gpio_clear(GPIOA, GPIO4);
-    }
-    else
-    {
-        gpio_set(GPIOA, GPIO4);
-    }
+    /* Setup optical relay as open-source output */
+    gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_LOW, GPIO1);
+    gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO1);
+    gpio_set(GPIOA, GPIO1);
+    relay_power(false);
 }
 
 void controlled_power_on(void)
 {
-    gpio_set(GPIOA, GPIO4);
+    led_power(true);
+    relay_power(true);
 }
 
 void controlled_power_off(void)
 {
-    gpio_clear(GPIOA, GPIO4);
+    led_power(false);
+    relay_power(false);
 }

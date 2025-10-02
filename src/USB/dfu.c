@@ -42,55 +42,65 @@ static enum usbd_request_return_codes
 dfu_control_class_request(usbd_device *usbd_dev,
                           struct usb_setup_data *req,
                           uint8_t **buf, uint16_t *len,
-                          usbd_control_complete_callback* complete) {
+                          usbd_control_complete_callback *complete)
+{
     (void)complete;
     (void)buf;
     (void)len;
 
-    if (req->wIndex != INTF_DFU) {
+    if (req->wIndex != INTF_DFU)
+    {
         return USBD_REQ_NEXT_CALLBACK;
     }
 
     enum usbd_request_return_codes status = USBD_REQ_NOTSUPP;
-    switch (req->bRequest) {
-        case DFU_DETACH: {
-            if (dfu_detach_request_callback != NULL) {
-                dfu_detach_request_callback();
-                status = USBD_REQ_HANDLED;
-            }
-            break;
+    switch (req->bRequest)
+    {
+    case DFU_DETACH:
+    {
+        if (dfu_detach_request_callback != NULL)
+        {
+            dfu_detach_request_callback();
+            status = USBD_REQ_HANDLED;
         }
-        case DFU_GETSTATUS:
-        case DFU_GETSTATE: {
-            status = USBD_REQ_NOTSUPP;
-            break;
-        }
-        case DFU_DNLOAD:
-        case DFU_UPLOAD:
-        case DFU_CLRSTATUS:
-        case DFU_ABORT: {
-            /* Stall the control pipe */
-            usbd_ep_stall_set(usbd_dev, 0x00, 1);
-            status = USBD_REQ_NOTSUPP;
-            break;
-        }
-        default: {
-            status = USBD_REQ_NOTSUPP;
-            break;
-        }
+        break;
+    }
+    case DFU_GETSTATUS:
+    case DFU_GETSTATE:
+    {
+        status = USBD_REQ_NOTSUPP;
+        break;
+    }
+    case DFU_DNLOAD:
+    case DFU_UPLOAD:
+    case DFU_CLRSTATUS:
+    case DFU_ABORT:
+    {
+        /* Stall the control pipe */
+        usbd_ep_stall_set(usbd_dev, 0x00, 1);
+        status = USBD_REQ_NOTSUPP;
+        break;
+    }
+    default:
+    {
+        status = USBD_REQ_NOTSUPP;
+        break;
+    }
     }
 
     return status;
 }
 
-static void dfu_set_config(usbd_device* usbd_dev, uint16_t wValue) {
+static void dfu_set_config(usbd_device *usbd_dev, uint16_t wValue)
+{
     (void)usbd_dev;
     (void)wValue;
 
     cmp_usb_register_control_class_callback(INTF_DFU, dfu_control_class_request);
 }
 
-void dfu_setup(usbd_device* usbd_dev, GenericCallback on_detach_request) {
+void dfu_setup(usbd_device *usbd_dev, GenericCallback on_detach_request)
+{
     (void)usbd_dev;
     dfu_detach_request_callback = on_detach_request;
     cmp_usb_register_set_config_callback(dfu_set_config);

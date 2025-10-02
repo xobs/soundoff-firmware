@@ -18,7 +18,7 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Linker script for STM32F042Fx6, 32K flash, 6K RAM). */
+/* Linker script for STM32F042Fx6, 32K flash, 6K RAM. */
 
 /* Define memory regions. */
 MEMORY

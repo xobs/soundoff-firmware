@@ -22,7 +22,8 @@
 
 #include "backup.h"
 
-void backup_write(enum BackupRegister reg, uint32_t value) {
+void backup_write(enum BackupRegister reg, uint32_t value)
+{
     rcc_periph_clock_enable(RCC_PWR);
     pwr_disable_backup_domain_write_protect();
     RTC_BKPXR((int)reg) = value;
@@ -30,49 +31,54 @@ void backup_write(enum BackupRegister reg, uint32_t value) {
     rcc_periph_clock_disable(RCC_PWR);
 }
 
-uint32_t backup_read(enum BackupRegister reg) {
+uint32_t backup_read(enum BackupRegister reg)
+{
     return RTC_BKPXR((int)reg);
 }
 
-bool backup_check_reset_source(enum ResetSource src) {
+bool backup_check_reset_source(enum ResetSource src)
+{
     bool matches = false;
-    switch (src) {
-        case RST_SRC_LPWR: {
-            matches = (RCC_CSR & RCC_CSR_LPWRRSTF) != 0;
-            break;
-        }
-        case RST_SRC_WWDG: {
-            matches = (RCC_CSR & RCC_CSR_WWDGRSTF) != 0;
-            break;
-        }
-        case RST_SRC_IWDG: {
-            matches = (RCC_CSR & RCC_CSR_IWDGRSTF) != 0;
-            break;
-        }
-        case RST_SRC_SW: {
-            matches = (RCC_CSR & RCC_CSR_SFTRSTF) != 0;
-            break;
-        }
-        case RST_SRC_POR: {
-            matches = (RCC_CSR & RCC_CSR_PORRSTF) != 0;
-            break;
-        }
-        case RST_SRC_PIN: {
-            /* Only true if no other reset flags set */
-            const uint32_t mask = RCC_CSR_LPWRRSTF
-                                | RCC_CSR_WWDGRSTF
-                                | RCC_CSR_IWDGRSTF
-                                | RCC_CSR_SFTRSTF
-                                | RCC_CSR_PORRSTF
-                                | RCC_CSR_PINRSTF;
-            matches = (RCC_CSR & mask) == RCC_CSR_PINRSTF;
-            break;
-        }
+    switch (src)
+    {
+    case RST_SRC_LPWR:
+    {
+        matches = (RCC_CSR & RCC_CSR_LPWRRSTF) != 0;
+        break;
+    }
+    case RST_SRC_WWDG:
+    {
+        matches = (RCC_CSR & RCC_CSR_WWDGRSTF) != 0;
+        break;
+    }
+    case RST_SRC_IWDG:
+    {
+        matches = (RCC_CSR & RCC_CSR_IWDGRSTF) != 0;
+        break;
+    }
+    case RST_SRC_SW:
+    {
+        matches = (RCC_CSR & RCC_CSR_SFTRSTF) != 0;
+        break;
+    }
+    case RST_SRC_POR:
+    {
+        matches = (RCC_CSR & RCC_CSR_PORRSTF) != 0;
+        break;
+    }
+    case RST_SRC_PIN:
+    {
+        /* Only true if no other reset flags set */
+        const uint32_t mask = RCC_CSR_LPWRRSTF | RCC_CSR_WWDGRSTF | RCC_CSR_IWDGRSTF | RCC_CSR_SFTRSTF | RCC_CSR_PORRSTF | RCC_CSR_PINRSTF;
+        matches = (RCC_CSR & mask) == RCC_CSR_PINRSTF;
+        break;
+    }
     }
 
     return matches;
 }
 
-void backup_clear_reset_source(void) {
+void backup_clear_reset_source(void)
+{
     RCC_CSR |= RCC_CSR_RMVF;
 }

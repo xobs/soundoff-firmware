@@ -61,15 +61,12 @@ clean::
 	@rm -f $(DEPS)
 
 SRCS           := $(wildcard *.c)
-SRCS           += $(wildcard DAP/*.c)
 SRCS           += $(wildcard USB/*.c)
 SRCS           += $(wildcard DFU/*.c)
 SRCS           += $(wildcard $(TARGET_COMMON_DIR)/*.c)
-SRCS           += $(wildcard $(TARGET_COMMON_DIR)/DAP/*.c)
 SRCS           += $(wildcard $(TARGET_COMMON_DIR)/USB/*.c)
 SRCS           += $(wildcard $(TARGET_COMMON_DIR)/DFU/*.c)
 SRCS           += $(wildcard $(TARGET_SPEC_DIR)/*.c)
-SRCS           += $(wildcard $(TARGET_SPEC_DIR)/DAP/*.c)
 SRCS           += $(wildcard $(TARGET_SPEC_DIR)/USB/*.c)
 SRCS           += $(wildcard $(TARGET_SPEC_DIR)/DFU/*.c)
 
@@ -87,7 +84,7 @@ CPPFLAGS       += -I.
 CPPFLAGS       += -I$(TARGET_COMMON_DIR)/
 CPPFLAGS       += -I$(TARGET_SPEC_DIR)/
 
-.PHONY         += debug size dfuse-flash dfu-flash reset
+.PHONY         += size dfuse-flash dfu-flash
 
 ifeq (,$(filter clean,$(MAKECMDGOALS)))
 -include *.d

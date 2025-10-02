@@ -28,12 +28,6 @@ endif
 
 ####################################################################
 # Target Architecture flags
-LIBNAME     = opencm3_stm32f0
-LOCM3_TARGET= stm32/f0
-DEFS       += -DSTM32F0
-FP_FLAGS   ?= -msoft-float
-ARCH_FLAGS  = -mthumb -mcpu=cortex-m0 $(FP_FLAGS)
-
 LIBNAME        ?= opencm3_stm32f0
 LOCM3_TARGET   ?= stm32/f0
 DEFS           ?= -DSTM32F0

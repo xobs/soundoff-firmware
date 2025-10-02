@@ -3,6 +3,7 @@ stating the contrary, files within the dap42 project are licensed
 under the ISC license as follows:
 
 Copyright (c) 2015, Devan Lai
+Copyright (c) 2025, Sean Cross
 
 Permission to use, copy, modify, and/or distribute this software
 for any purpose with or without fee is hereby granted, provided
@@ -18,19 +19,11 @@ LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-Portions of the dap42 project pertaining to the CMSIS-DAP reference
-implementation are licensed under the Apache 2.0 license and are
-clearly marked as such.
-
 The following files in the dap42 project pertaining to the base
 Makefile and linker script are derived from the libopencm3 examples
 template and are licensed under the GNU Lesser General Public
 License version 3:
-* libopencm3.rules.mk
-* src/libopencm3.target.mk
 * src/stm32f042/stm32f042x6.ld
-* src/stm32f103/stm32f103x8.ld
-* src/stm32f103/stm32f103x8-dfuboot.ld
 
 libopencm3, included as a submodule and statically linked as part
 of the build process, is separately licensed under the LGPLv3.
@@ -72,7 +65,7 @@ project licensed under the LGPLv3:
 the terms and conditions of version 3 of the GNU General Public
 License, supplemented by the additional permissions listed below.
 
-  0. Additional Definitions.
+  1. Additional Definitions.
 
   As used herein, "this License" refers to version 3 of the GNU Lesser
 General Public License, and the "GNU GPL" refers to version 3 of the GNU

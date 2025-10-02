@@ -27,48 +27,53 @@
 static uint16_t build_bos_descriptor(const struct usb_bos_descriptor *bos,
                                      uint8_t *buf, uint16_t len)
 {
-	uint8_t *tmpbuf = buf;
-	uint16_t count, total = 0, totallen = 0;
-	uint16_t i;
+    uint8_t *tmpbuf = buf;
+    uint16_t count, total = 0, totallen = 0;
+    uint16_t i;
 
-	memcpy(buf, bos, count = MIN(len, bos->bLength));
-	buf += count;
-	len -= count;
-	total += count;
-	totallen += bos->bLength;
+    memcpy(buf, bos, count = MIN(len, bos->bLength));
+    buf += count;
+    len -= count;
+    total += count;
+    totallen += bos->bLength;
 
-	/* For each device capability */
-	for (i = 0; i < bos->bNumDeviceCaps; i++) {
+    /* For each device capability */
+    for (i = 0; i < bos->bNumDeviceCaps; i++)
+    {
         /* Copy device capability descriptor. */
         const struct usb_device_capability_descriptor *cap =
             bos->capabilities[i];
-        
+
         memcpy(buf, cap, count = MIN(len, cap->bLength));
         buf += count;
         len -= count;
         total += count;
         totallen += cap->bLength;
-	}
+    }
 
-	/* Fill in wTotalLength. */
-	*(uint16_t *)(tmpbuf + 2) = totallen;
+    /* Fill in wTotalLength. */
+    *(uint16_t *)(tmpbuf + 2) = totallen;
 
-	return total;
+    return total;
 }
 
-static const struct usb_bos_descriptor* usb21_bos;
+static const struct usb_bos_descriptor *usb21_bos;
 
-static enum usbd_request_return_codes usb21_standard_get_descriptor(usbd_device* usbd_dev,
-                                         struct usb_setup_data *req,
-                                         uint8_t **buf, uint16_t *len,
-                                         usbd_control_complete_callback* complete) {
+static enum usbd_request_return_codes usb21_standard_get_descriptor(usbd_device *usbd_dev,
+                                                                    struct usb_setup_data *req,
+                                                                    uint8_t **buf, uint16_t *len,
+                                                                    usbd_control_complete_callback *complete)
+{
     (void)complete;
     (void)usbd_dev;
-    
-    if (req->bRequest == USB_REQ_GET_DESCRIPTOR) {
+
+    if (req->bRequest == USB_REQ_GET_DESCRIPTOR)
+    {
         int descr_type = req->wValue >> 8;
-        if (descr_type == USB_DT_BOS) {
-            if (!usb21_bos) {
+        if (descr_type == USB_DT_BOS)
+        {
+            if (!usb21_bos)
+            {
                 return USBD_REQ_NOTSUPP;
             }
             *len = build_bos_descriptor(usb21_bos, *buf, *len);
@@ -79,7 +84,8 @@ static enum usbd_request_return_codes usb21_standard_get_descriptor(usbd_device*
     return USBD_REQ_NEXT_CALLBACK;
 }
 
-static void usb21_set_config(usbd_device* usbd_dev, uint16_t wValue) {
+static void usb21_set_config(usbd_device *usbd_dev, uint16_t wValue)
+{
     (void)wValue;
 
     usbd_register_control_callback(
@@ -89,7 +95,8 @@ static void usb21_set_config(usbd_device* usbd_dev, uint16_t wValue) {
         &usb21_standard_get_descriptor);
 }
 
-void usb21_setup(usbd_device* usbd_dev, const struct usb_bos_descriptor* binary_object_store) {
+void usb21_setup(usbd_device *usbd_dev, const struct usb_bos_descriptor *binary_object_store)
+{
     usb21_bos = binary_object_store;
 
     /* Register the control request handler _before_ the config is set */

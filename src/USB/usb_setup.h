@@ -20,6 +20,6 @@
 
 #include <libopencm3/usb/usbd.h>
 
-extern const usbd_driver* target_usb_init(void);
+extern const usbd_driver *target_usb_init(void);
 
 #endif

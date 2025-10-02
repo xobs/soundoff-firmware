@@ -36,7 +36,7 @@
 
 // Shut down power if we don't receive a SOF packet
 // within this time period.
-#define SHUTDOWN_TIME_MS 5000
+#define SHUTDOWN_TIME_MS 1000
 
 static inline uint32_t millis(void)
 {
@@ -96,9 +96,7 @@ int main(void)
     clock_setup();
     tick_setup(1000);
     gpio_setup();
-    led_num(0);
-
-    led_num(1);
+    
 
     {
         char serial[USB_SERIAL_NUM_LENGTH + 1];
@@ -118,9 +116,8 @@ int main(void)
         winusb_setup(usbd_dev);
     }
 
-    cmp_usb_register_sof_callback(saw_sof);
-
     tick_start();
+    usbd_register_sof_callback(usbd_dev, saw_sof);
 
     /* Enable the watchdog to enable DFU recovery from bad firmware images */
     iwdg_set_period_ms(1000);
@@ -144,7 +141,7 @@ int main(void)
         // Note that if this wraps, that will be fine since
         // we only turn ON the power when a SOF packet is
         // received.
-        if ((last_sof_millis - millis()) > SHUTDOWN_TIME_MS)
+        if ((millis() - last_sof_millis) > SHUTDOWN_TIME_MS)
         {
             controlled_power_off();
         }

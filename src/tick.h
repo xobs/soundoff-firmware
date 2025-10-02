@@ -19,12 +19,9 @@
 #ifndef TICK_H_INCLUDED
 #define TICK_H_INCLUDED
 
-extern bool tick_setup(uint32_t tick_freq_hz);
-extern void tick_start(void);
-extern void tick_stop(void);
-
-extern volatile uint32_t __ticks;
-
-extern uint32_t get_ticks(void);
+bool tick_setup(uint32_t tick_freq_hz);
+void tick_start(void);
+void tick_stop(void);
+uint32_t get_ticks(void);
 
 #endif
