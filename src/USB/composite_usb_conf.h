@@ -37,9 +37,6 @@ enum
 #if BULK_AVAILABLE
     ENDP_BULK_OUT,
 #endif
-#if CDC_AVAILABLE
-    ENDP_CDC_DATA_OUT,
-#endif
 
     HIGHEST_OUT_ENDPOINT
 };
@@ -54,10 +51,6 @@ enum
     ENDP_BULK_IN,
     ENDP_BULK_IN_SWO,
 #endif
-#if CDC_AVAILABLE
-    ENDP_CDC_DATA_IN,
-    ENDP_CDC_COMM_IN,
-#endif
 
     HIGHEST_IN_ENDPOINT,
 };
@@ -66,10 +59,6 @@ enum
 {
 #if HID_AVAILABLE
     INTF_HID,
-#endif
-#if CDC_AVAILABLE
-    INTF_CDC_COMM,
-    INTF_CDC_DATA,
 #endif
 #if DFU_AVAILABLE
     INTF_DFU,
@@ -88,11 +77,6 @@ enum
     STR_HID_INTF = STR_PRODUCT,
 #endif
     STR_SERIAL,
-#if CDC_AVAILABLE
-    STR_CDC_INTF_ASSOC_DESC,
-    STR_CDC_CONTROL_INTF,
-    STR_CDC_DATA_INTF,
-#endif
 #if DFU_AVAILABLE
     STR_DFU_INTF,
 #endif

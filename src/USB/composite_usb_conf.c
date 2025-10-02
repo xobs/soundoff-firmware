@@ -20,7 +20,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <libopencm3/usb/cdc.h>
 #include <libopencm3/usb/hid.h>
 #include <libopencm3/usb/dfu.h>
 
@@ -32,7 +31,6 @@
 
 #include "hid.h"
 #include "dfu.h"
-#include "cdc.h"
 
 #include "config.h"
 #include "USB/usb_limits.h"
@@ -58,13 +56,7 @@ _Static_assert((1 + NUM_OUT_ENDPOINTS <= 8), "Too many OUT endpoints for USB cor
 #define BULK_PMA_USAGE 0
 #endif
 
-#if CDC_AVAILABLE
-#define CDC_PMA_USAGE (2 * USB_CDC_MAX_PACKET_SIZE + 16)
-#else
-#define CDC_PMA_USAGE 0
-#endif
-
-#define TOTAL_PMA_USAGE (CONTROL_PMA_USAGE + HID_PMA_USAGE + BULK_PMA_USAGE + CDC_PMA_USAGE)
+#define TOTAL_PMA_USAGE (CONTROL_PMA_USAGE + HID_PMA_USAGE + BULK_PMA_USAGE)
 
 #define MAX_USB_PMA_SIZE USB_PMA_SIZE
 
@@ -86,88 +78,6 @@ static const struct usb_device_descriptor dev = {
     .iSerialNumber = STR_SERIAL,
     .bNumConfigurations = 1,
 };
-
-#if CDC_AVAILABLE
-
-/*
- * This notification endpoint isn't implemented. According to CDC spec it's
- * optional, but its absence causes a NULL pointer dereference in the
- * Linux cdc_acm driver.
- */
-static const struct usb_endpoint_descriptor comm_endpoints[] = {
-    {
-        .bLength = USB_DT_ENDPOINT_SIZE,
-        .bDescriptorType = USB_DT_ENDPOINT,
-        .bEndpointAddress = ENDP_CDC_COMM_IN,
-        .bmAttributes = USB_ENDPOINT_ATTR_INTERRUPT,
-        .wMaxPacketSize = 16,
-        .bInterval = 1,
-    }};
-
-static const struct usb_endpoint_descriptor data_endpoints[] = {
-    {
-        .bLength = USB_DT_ENDPOINT_SIZE,
-        .bDescriptorType = USB_DT_ENDPOINT,
-        .bEndpointAddress = ENDP_CDC_DATA_OUT,
-        .bmAttributes = USB_ENDPOINT_ATTR_BULK,
-        .wMaxPacketSize = USB_CDC_MAX_PACKET_SIZE,
-        .bInterval = 1,
-    },
-    {
-        .bLength = USB_DT_ENDPOINT_SIZE,
-        .bDescriptorType = USB_DT_ENDPOINT,
-        .bEndpointAddress = ENDP_CDC_DATA_IN,
-        .bmAttributes = USB_ENDPOINT_ATTR_BULK,
-        .wMaxPacketSize = USB_CDC_MAX_PACKET_SIZE,
-        .bInterval = 1,
-    }};
-
-#endif
-
-#if CDC_AVAILABLE
-
-static const struct usb_iface_assoc_descriptor iface_assoc = {
-    .bLength = USB_DT_INTERFACE_ASSOCIATION_SIZE,
-    .bDescriptorType = USB_DT_INTERFACE_ASSOCIATION,
-    .bFirstInterface = INTF_CDC_COMM,
-    .bInterfaceCount = 2,
-    .bFunctionClass = USB_CLASS_CDC,
-    .bFunctionSubClass = USB_CDC_SUBCLASS_ACM,
-    .bFunctionProtocol = USB_CDC_PROTOCOL_NONE,
-    .iFunction = STR_CDC_INTF_ASSOC_DESC,
-};
-
-static const struct usb_interface_descriptor comm_iface = {
-    .bLength = USB_DT_INTERFACE_SIZE,
-    .bDescriptorType = USB_DT_INTERFACE,
-    .bInterfaceNumber = INTF_CDC_COMM,
-    .bAlternateSetting = 0,
-    .bNumEndpoints = 1,
-    .bInterfaceClass = USB_CLASS_CDC,
-    .bInterfaceSubClass = USB_CDC_SUBCLASS_ACM,
-    .bInterfaceProtocol = USB_CDC_PROTOCOL_NONE,
-    .iInterface = STR_CDC_CONTROL_INTF,
-
-    .endpoint = comm_endpoints,
-
-    .extra = &cdc_acm_functional_descriptors,
-    .extralen = sizeof(cdc_acm_functional_descriptors)};
-
-static const struct usb_interface_descriptor data_iface = {
-    .bLength = USB_DT_INTERFACE_SIZE,
-    .bDescriptorType = USB_DT_INTERFACE,
-    .bInterfaceNumber = INTF_CDC_DATA,
-    .bAlternateSetting = 0,
-    .bNumEndpoints = 2,
-    .bInterfaceClass = USB_CLASS_DATA,
-    .bInterfaceSubClass = 0,
-    .bInterfaceProtocol = 0,
-    .iInterface = STR_CDC_DATA_INTF,
-
-    .endpoint = data_endpoints,
-};
-
-#endif
 
 #if HID_AVAILABLE
 static const struct usb_endpoint_descriptor hid_endpoints[] = {
@@ -277,18 +187,6 @@ static const struct usb_interface interfaces[] = {
         .altsetting = &hid_iface,
     },
 #endif
-#if CDC_AVAILABLE
-    /* CDC Control Interface */
-    {
-        .num_altsetting = 1,
-        .altsetting = &comm_iface,
-        .iface_assoc = &iface_assoc},
-    /* CDC Data Interface */
-    {
-        .num_altsetting = 1,
-        .altsetting = &data_iface,
-    },
-#endif
 #if DFU_AVAILABLE
     /* DFU interface */
     {
@@ -325,11 +223,6 @@ static const char *usb_strings[] = {
     [STR_MANUFACTURER - 1] = "Devanarchy",
     [STR_PRODUCT - 1] = (PRODUCT_NAME " CMSIS-DAP"),
     [STR_SERIAL - 1] = serial_number,
-#if CDC_AVAILABLE
-    [STR_CDC_INTF_ASSOC_DESC - 1] = (PRODUCT_NAME " CDC-ACM Serial"),
-    [STR_CDC_CONTROL_INTF - 1] = "CDC Control",
-    [STR_CDC_DATA_INTF - 1] = "CDC Data",
-#endif
 #if DFU_AVAILABLE
     [STR_DFU_INTF - 1] = (PRODUCT_NAME " DFU"),
 #endif

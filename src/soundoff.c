@@ -27,7 +27,6 @@
 #include "target.h"
 
 #include "USB/composite_usb_conf.h"
-#include "USB/cdc.h"
 #include "USB/dfu.h"
 #include "USB/winusb.h"
 
@@ -37,7 +36,6 @@
 
 #include "tick.h"
 #include "retarget.h"
-#include "console.h"
 
 extern void initialise_monitor_handles(void);
 
@@ -65,12 +63,6 @@ static inline void wait_ms(uint32_t duration_ms)
     }
 }
 
-static uint32_t usb_timer = 0;
-static void on_usb_activity(void)
-{
-    usb_timer = 1000;
-}
-
 static bool do_reset_to_dfu = false;
 static void on_dfu_request(void)
 {
@@ -96,19 +88,9 @@ int main(void)
     gpio_setup();
     led_num(0);
 
-    if (CDC_AVAILABLE)
-    {
-        console_setup(DEFAULT_BAUDRATE);
-    }
-
     if (SEMIHOSTING)
     {
         initialise_monitor_handles();
-    }
-    else if (CDC_AVAILABLE)
-    {
-        retarget(STDOUT_FILENO, CONSOLE_USART);
-        retarget(STDERR_FILENO, CONSOLE_USART);
     }
 
     led_num(1);
@@ -122,12 +104,6 @@ int main(void)
 
     usbd_dev = cmp_usb_setup();
     DAP_app_setup(usbd_dev, &on_dfu_request);
-
-    if (CDC_AVAILABLE)
-    {
-        cdc_uart_app_setup(usbd_dev, on_usb_activity, on_usb_activity);
-        cdc_uart_app_set_timeout(1);
-    }
 
     if (DFU_AVAILABLE)
     {
@@ -152,18 +128,9 @@ int main(void)
     {
         iwdg_reset();
 
-        if (CDC_AVAILABLE)
-        {
-            cdc_uart_app_update();
-        }
-
         // Handle DAP
-        bool dap_active = DAP_app_update();
-        if (dap_active)
-        {
-            usb_timer = 1000;
-        }
-        else if (do_reset_to_dfu && DFU_AVAILABLE)
+        DAP_app_update();
+        if (do_reset_to_dfu && DFU_AVAILABLE)
         {
             /* Blink 3 times to indicate reset */
             int x;
@@ -178,16 +145,6 @@ int main(void)
             }
 
             DFU_reset_and_jump_to_bootloader();
-        }
-
-        if (usb_timer > 0)
-        {
-            usb_timer--;
-            LED_ACTIVITY_OUT(1);
-        }
-        else
-        {
-            LED_ACTIVITY_OUT(0);
         }
     }
 
