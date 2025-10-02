@@ -24,14 +24,7 @@ export V
 
 BUILD_DIR      ?= ./build
 
-all: DAP42.bin DAP42DC.bin KITCHEN42.bin \
-     DAP103.bin DAP103-DFU.bin \
-     DAP103-BLUEPILL.bin DAP103-BLUEPILL-DFU.bin \
-     DAP103-HID.bin DAP103-HID-DFU.bin \
-     DAP103-HID-BLUEPILL.bin DAP103-HID-BLUEPILL-DFU.bin \
-     DAP103-NUCLEO.bin DAP103-NUCLEO-STBOOT.bin \
-     BRAINv3.3.bin \
-     DAP42K6U.bin TINYDYNE.bin NANODYNE.bin
+all: soundoff.bin
 clean:
 	$(Q)$(RM) $(BUILD_DIR)/*.bin
 	$(Q)$(MAKE) -C src/ clean
@@ -41,105 +34,8 @@ clean:
 $(BUILD_DIR):
 	$(Q)mkdir -p $(BUILD_DIR)
 
-DAP42.bin: | $(BUILD_DIR)
+soundoff.bin: | $(BUILD_DIR)
 	@printf "  BUILD $(@)\n"
 	$(Q)$(MAKE) TARGET=STM32F042 -C src/ clean
 	$(Q)$(MAKE) TARGET=STM32F042 -C src/
-	$(Q)cp src/DAP42.bin $(BUILD_DIR)/$(@)
-
-DAP42DC.bin: | $(BUILD_DIR)
-	@printf "  BUILD $(@)\n"
-	$(Q)$(MAKE) TARGET=DAP42DC -C src/ clean
-	$(Q)$(MAKE) TARGET=DAP42DC -C src/
-	$(Q)cp src/DAP42.bin $(BUILD_DIR)/$(@)
-
-TINYDYNE.bin: | $(BUILD_DIR)
-	@printf "  BUILD $(@)\n"
-	$(Q)$(MAKE) TARGET=TINYDYNE -C src/ clean
-	$(Q)$(MAKE) TARGET=TINYDYNE -C src/
-	$(Q)cp src/DAP42.bin $(BUILD_DIR)/$(@)
-
-NANODYNE.bin: | $(BUILD_DIR)
-	@printf "  BUILD $(@)\n"
-	$(Q)$(MAKE) TARGET=NANODYNE -C src/ clean
-	$(Q)$(MAKE) TARGET=NANODYNE -C src/
-	$(Q)cp src/DAP42.bin $(BUILD_DIR)/$(@)
-
-
-KITCHEN42.bin: | $(BUILD_DIR)
-	@printf "  BUILD $(@)\n"
-	$(Q)$(MAKE) TARGET=KITCHEN42 -C src/ clean
-	$(Q)$(MAKE) TARGET=KITCHEN42 -C src/
-	$(Q)cp src/DAP42.bin $(BUILD_DIR)/$(@)
-
-DAP103.bin: | $(BUILD_DIR)
-	@printf "  BUILD $(@)\n"
-	$(Q)$(MAKE) TARGET=STM32F103 -C src/ clean
-	$(Q)$(MAKE) TARGET=STM32F103 -C src/
-	$(Q)cp src/DAP42.bin $(BUILD_DIR)/$(@)
-
-DAP103-DFU.bin: | $(BUILD_DIR)
-	@printf "  BUILD $(@)\n"
-	$(Q)$(MAKE) TARGET=STM32F103-DFUBOOT -C src/ clean
-	$(Q)$(MAKE) TARGET=STM32F103-DFUBOOT -C src/
-	$(Q)cp src/DAP42.bin $(BUILD_DIR)/$(@)
-
-DAP103-BLUEPILL.bin: | $(BUILD_DIR)
-	@printf "  BUILD $(@)\n"
-	$(Q)$(MAKE) TARGET=STM32F103-BLUEPILL -C src/ clean
-	$(Q)$(MAKE) TARGET=STM32F103-BLUEPILL -C src/
-	$(Q)cp src/DAP42.bin $(BUILD_DIR)/$(@)
-
-DAP103-BLUEPILL-DFU.bin: | $(BUILD_DIR)
-	@printf "  BUILD $(@)\n"
-	$(Q)$(MAKE) TARGET=STM32F103-BLUEPILL-DFUBOOT -C src/ clean
-	$(Q)$(MAKE) TARGET=STM32F103-BLUEPILL-DFUBOOT -C src/
-	$(Q)cp src/DAP42.bin $(BUILD_DIR)/$(@)
-
-DAP103-HID.bin: | $(BUILD_DIR)
-	@printf "  BUILD $(@)\n"
-	$(Q)$(MAKE) TARGET=STM32F103-HID -C src/ clean
-	$(Q)$(MAKE) TARGET=STM32F103-HID -C src/
-	$(Q)cp src/DAP42.bin $(BUILD_DIR)/$(@)
-
-DAP103-HID-DFU.bin: | $(BUILD_DIR)
-	@printf "  BUILD $(@)\n"
-	$(Q)$(MAKE) TARGET=STM32F103-HID-DFUBOOT -C src/ clean
-	$(Q)$(MAKE) TARGET=STM32F103-HID-DFUBOOT -C src/
-	$(Q)cp src/DAP42.bin $(BUILD_DIR)/$(@)
-
-DAP103-HID-BLUEPILL.bin: | $(BUILD_DIR)
-	@printf "  BUILD $(@)\n"
-	$(Q)$(MAKE) TARGET=STM32F103-HID-BLUEPILL -C src/ clean
-	$(Q)$(MAKE) TARGET=STM32F103-HID-BLUEPILL -C src/
-	$(Q)cp src/DAP42.bin $(BUILD_DIR)/$(@)
-
-DAP103-HID-BLUEPILL-DFU.bin: | $(BUILD_DIR)
-	@printf "  BUILD $(@)\n"
-	$(Q)$(MAKE) TARGET=STM32F103-HID-BLUEPILL-DFUBOOT -C src/ clean
-	$(Q)$(MAKE) TARGET=STM32F103-HID-BLUEPILL-DFUBOOT -C src/
-	$(Q)cp src/DAP42.bin $(BUILD_DIR)/$(@)
-
-BRAINv3.3.bin: | $(BUILD_DIR)
-	@printf "  BUILD $(@)\n"
-	$(Q)$(MAKE) TARGET=BRAINV3.3 -C src/ clean
-	$(Q)$(MAKE) TARGET=BRAINV3.3 -C src/
-	$(Q)cp src/DAP42.bin $(BUILD_DIR)/$(@)
-
-DAP42K6U.bin: | $(BUILD_DIR)
-	@printf "  BUILD $(@)\n"
-	$(Q)$(MAKE) TARGET=DAP42K6U -C src/ clean
-	$(Q)$(MAKE) TARGET=DAP42K6U -C src/
-	$(Q)cp src/DAP42.bin $(BUILD_DIR)/$(@)
-
-DAP103-NUCLEO.bin: | $(BUILD_DIR)
-	@printf "  BUILD $(@)\n"
-	$(Q)$(MAKE) TARGET=STLINKV2-1 -C src/ clean
-	$(Q)$(MAKE) TARGET=STLINKV2-1 -C src/
-	$(Q)cp src/DAP42.bin $(BUILD_DIR)/$(@)
-
-DAP103-NUCLEO-STBOOT.bin: | $(BUILD_DIR)
-	@printf "  BUILD $(@)\n"
-	$(Q)$(MAKE) TARGET=STLINKV2-1-STBOOT -C src/ clean
-	$(Q)$(MAKE) TARGET=STLINKV2-1-STBOOT -C src/
-	$(Q)cp src/DAP42.bin $(BUILD_DIR)/$(@)
+	$(Q)cp src/soundoff.bin $(BUILD_DIR)/$(@)

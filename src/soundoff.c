@@ -36,50 +36,58 @@
 #include "DAP/CMSIS_DAP_hal.h"
 #include "DFU/DFU.h"
 
-#include "CAN/slcan.h"
-
 #include "tick.h"
 #include "retarget.h"
 #include "console.h"
 
 extern void initialise_monitor_handles(void);
 
-static inline uint32_t millis(void) {
+static inline uint32_t millis(void)
+{
     return get_ticks();
 }
 
-static inline void wait_ms(uint32_t duration_ms) {
+static inline void wait_ms(uint32_t duration_ms)
+{
     uint32_t now = millis();
     uint32_t end = now + duration_ms;
-    if (end < now) {
+    if (end < now)
+    {
         end = 0xFFFFFFFFU - end;
-        while (millis() >= now) {
+        while (millis() >= now)
+        {
             __asm__("NOP");
         }
     }
 
-    while (millis() < end) {
+    while (millis() < end)
+    {
         __asm__("NOP");
     }
 }
 
 static uint32_t usb_timer = 0;
-static void on_usb_activity(void) {
+static void on_usb_activity(void)
+{
     usb_timer = 1000;
 }
 
 static bool do_reset_to_dfu = false;
-static void on_dfu_request(void) {
+static void on_dfu_request(void)
+{
     do_reset_to_dfu = true;
 }
 
-usbd_device* usbd_dev = NULL;
-void USB_IRQ_NAME(void) {
+usbd_device *usbd_dev = NULL;
+void USB_IRQ_NAME(void)
+{
     usbd_poll(usbd_dev);
 }
 
-int main(void) {
-    if (DFU_AVAILABLE) {
+int main(void)
+{
+    if (DFU_AVAILABLE)
+    {
         DFU_maybe_jump_to_bootloader();
     }
 
@@ -89,26 +97,31 @@ int main(void) {
     gpio_setup();
     led_num(0);
 
-    if (CDC_AVAILABLE) {
+    if (CDC_AVAILABLE)
+    {
         console_setup(DEFAULT_BAUDRATE);
     }
 
-    if (SEMIHOSTING) {
+    if (SEMIHOSTING)
+    {
         initialise_monitor_handles();
     }
-    else if (VCDC_AVAILABLE) {
+    else if (VCDC_AVAILABLE)
+    {
         retarget(STDOUT_FILENO, VIRTUAL_USART);
         retarget(STDERR_FILENO, VIRTUAL_USART);
-    } else if (CDC_AVAILABLE) {
+    }
+    else if (CDC_AVAILABLE)
+    {
         retarget(STDOUT_FILENO, CONSOLE_USART);
         retarget(STDERR_FILENO, CONSOLE_USART);
     }
-    
+
     led_num(1);
 
     {
-        char serial[USB_SERIAL_NUM_LENGTH+1];
-        desig_get_unique_id_as_string(serial, USB_SERIAL_NUM_LENGTH+1);
+        char serial[USB_SERIAL_NUM_LENGTH + 1];
+        desig_get_unique_id_as_string(serial, USB_SERIAL_NUM_LENGTH + 1);
         cmp_set_usb_serial_number(serial);
         DAP_app_set_serial_number(serial);
     }
@@ -116,25 +129,25 @@ int main(void) {
     usbd_dev = cmp_usb_setup();
     DAP_app_setup(usbd_dev, &on_dfu_request);
 
-    if (CDC_AVAILABLE) {
+    if (CDC_AVAILABLE)
+    {
         cdc_uart_app_setup(usbd_dev, on_usb_activity, on_usb_activity);
         cdc_uart_app_set_timeout(1);
     }
 
-    if (VCDC_AVAILABLE) {
+    if (VCDC_AVAILABLE)
+    {
         vcdc_app_setup(usbd_dev, on_usb_activity, on_usb_activity);
     }
 
-    if (DFU_AVAILABLE) {
+    if (DFU_AVAILABLE)
+    {
         dfu_setup(usbd_dev, on_dfu_request);
     }
 
-    if (WINUSB_AVAILABLE && (DFU_AVAILABLE || BULK_AVAILABLE)) {
+    if (WINUSB_AVAILABLE && (DFU_AVAILABLE || BULK_AVAILABLE))
+    {
         winusb_setup(usbd_dev);
-    }
-
-    if (CAN_RX_AVAILABLE && VCDC_AVAILABLE) {
-        slcan_app_setup(500000, MODE_RESET);
     }
 
     tick_start();
@@ -146,30 +159,32 @@ int main(void) {
     /* Enable USB */
     nvic_enable_irq(USB_NVIC_LINE);
 
-    while (1) {
+    while (1)
+    {
         iwdg_reset();
 
-        if (CDC_AVAILABLE) {
+        if (CDC_AVAILABLE)
+        {
             cdc_uart_app_update();
         }
 
-        if (CAN_RX_AVAILABLE && VCDC_AVAILABLE) {
-            slcan_app_update();
-        }
-
-        if (VCDC_AVAILABLE) {
+        if (VCDC_AVAILABLE)
+        {
             vcdc_app_update();
         }
 
-
         // Handle DAP
         bool dap_active = DAP_app_update();
-        if (dap_active) {
+        if (dap_active)
+        {
             usb_timer = 1000;
-        } else if (do_reset_to_dfu && DFU_AVAILABLE) {
+        }
+        else if (do_reset_to_dfu && DFU_AVAILABLE)
+        {
             /* Blink 3 times to indicate reset */
             int x;
-            for (x=0; x < 3; x++) {
+            for (x = 0; x < 3; x++)
+            {
                 iwdg_reset();
                 led_num(7);
                 wait_ms(150);
@@ -181,10 +196,13 @@ int main(void) {
             DFU_reset_and_jump_to_bootloader();
         }
 
-        if (usb_timer > 0) {
+        if (usb_timer > 0)
+        {
             usb_timer--;
             LED_ACTIVITY_OUT(1);
-        } else {
+        }
+        else
+        {
             LED_ACTIVITY_OUT(0);
         }
     }

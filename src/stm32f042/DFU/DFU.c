@@ -27,7 +27,7 @@
 #include "backup.h"
 #include "DFU/DFU.h"
 
-static const uint32_t CMD_BOOT_WITH_BOOT0_PIN  = 0x44465500UL;
+static const uint32_t CMD_BOOT_WITH_BOOT0_PIN = 0x44465500UL;
 static const uint32_t CMD_BOOT_WITH_NBOOT0_BIT = 0x44466621UL;
 
 /* Start of bootloader region */
@@ -35,42 +35,43 @@ static const uint32_t BOOT_ADDR = 0x1FFFC400UL;
 
 static inline void __set_MSP(uint32_t topOfMainStack)
 {
-    asm("msr msp, %0" : : "r" (topOfMainStack));
+    asm("msr msp, %0" : : "r"(topOfMainStack));
 }
 
-void jump_to_bootloader(void) __attribute__ ((noreturn));
-void force_usb_reenumerate(void);
+void jump_to_bootloader(void) __attribute__((noreturn));
 
 /* Sets up and jumps to the bootloader */
-void jump_to_bootloader(void) {
-    uint32_t boot_stack_ptr = *(uint32_t*)(BOOT_ADDR);
-    uint32_t dfu_reset_addr = *(uint32_t*)(BOOT_ADDR+4);
+void jump_to_bootloader(void)
+{
+    uint32_t boot_stack_ptr = *(uint32_t *)(BOOT_ADDR);
+    uint32_t dfu_reset_addr = *(uint32_t *)(BOOT_ADDR + 4);
 
-    void (*dfu_bootloader)(void) = (void (*))(dfu_reset_addr);
+    void (*dfu_bootloader)(void) = (void(*))(dfu_reset_addr);
 
     /* Remap vector table to system memory */
     rcc_periph_clock_enable(RCC_SYSCFG_COMP);
     SYSCFG_CFGR1 = 0x1;
 
-    force_usb_reenumerate();
-
     /* Reset the stack pointer */
     __set_MSP(boot_stack_ptr);
 
     dfu_bootloader();
-    while (1);
+    while (1)
+        ;
 }
 
 /* Writes a DFU command to the backup register and resets */
-void DFU_reset_and_jump_to_bootloader(void) {
+void DFU_reset_and_jump_to_bootloader(void)
+{
     /* Check if BOOT_SEL is set, which requires driving the BOOT0 pin*/
-    if (FLASH_OBR & FLASH_OBR_BOOT_SEL) {
+    if (FLASH_OBR & FLASH_OBR_BOOT_SEL)
+    {
         backup_write(BKP0, CMD_BOOT_WITH_BOOT0_PIN);
-    } else {
+    }
+    else
+    {
         backup_write(BKP0, CMD_BOOT_WITH_NBOOT0_BIT);
     }
-
-    force_usb_reenumerate();
 
     rcc_set_sysclk_source(RCC_HSI);
     rcc_osc_off(RCC_HSI48);
@@ -79,17 +80,24 @@ void DFU_reset_and_jump_to_bootloader(void) {
 }
 
 /* Potentially diverts to the DFU bootloader should be called as early as possible */
-void DFU_maybe_jump_to_bootloader(void) {
+void DFU_maybe_jump_to_bootloader(void)
+{
     uint32_t cmd = 0;
 
-    if (backup_check_reset_source(RST_SRC_IWDG)) {
+    if (backup_check_reset_source(RST_SRC_IWDG))
+    {
         /* Watchdog timeout - enter the bootloader */
-        if (FLASH_OBR & FLASH_OBR_BOOT_SEL) {
+        if (FLASH_OBR & FLASH_OBR_BOOT_SEL)
+        {
             cmd = CMD_BOOT_WITH_BOOT0_PIN;
-        } else {
+        }
+        else
+        {
             cmd = CMD_BOOT_WITH_NBOOT0_BIT;
         }
-    } else if (backup_check_reset_source(RST_SRC_SW)) {
+    }
+    else if (backup_check_reset_source(RST_SRC_SW))
+    {
         /* Intentional software reset - read the backup
            register to see what we should do */
         cmd = backup_read(BKP0);
@@ -99,8 +107,10 @@ void DFU_maybe_jump_to_bootloader(void) {
     backup_write(BKP0, 0x0);
     backup_clear_reset_source();
 
-    if (cmd == CMD_BOOT_WITH_BOOT0_PIN || cmd == CMD_BOOT_WITH_NBOOT0_BIT) {
-        if (cmd == CMD_BOOT_WITH_BOOT0_PIN) {
+    if (cmd == CMD_BOOT_WITH_BOOT0_PIN || cmd == CMD_BOOT_WITH_NBOOT0_BIT)
+    {
+        if (cmd == CMD_BOOT_WITH_BOOT0_PIN)
+        {
             /* If BOOT_SEL is set, drive the BOOT0 pin high so that the
                ROM bootloader will enter DFU mode */
             rcc_periph_clock_enable(nBOOT0_GPIO_CLOCK);
@@ -110,13 +120,16 @@ void DFU_maybe_jump_to_bootloader(void) {
 
         /* Jump to the ROM bootloader */
         jump_to_bootloader();
-    } else {
+    }
+    else
+    {
 #if defined(SOFT_DFU_AVAILABLE) && SOFT_DFU_AVAILABLE
         rcc_periph_clock_enable(SOFT_DFU_GPIO_CLOCK);
 
         uint32_t pull_mode = SOFT_DFU_ACTIVE_HIGH ? GPIO_PUPD_PULLDOWN : GPIO_PUPD_PULLUP;
         gpio_mode_setup(SOFT_DFU_GPIO_PORT, GPIO_MODE_INPUT, pull_mode, SOFT_DFU_GPIO_PIN);
-        if ((gpio_get(SOFT_DFU_GPIO_PORT, SOFT_DFU_GPIO_PIN) == 0) ^ SOFT_DFU_ACTIVE_HIGH) {
+        if ((gpio_get(SOFT_DFU_GPIO_PORT, SOFT_DFU_GPIO_PIN) == 0) ^ SOFT_DFU_ACTIVE_HIGH)
+        {
             DFU_reset_and_jump_to_bootloader();
         }
 #endif

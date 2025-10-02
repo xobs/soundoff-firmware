@@ -28,22 +28,11 @@ endif
 
 ####################################################################
 # Target Architecture flags
-ifeq ($(ARCH),STM32F0)
-	LIBNAME     = opencm3_stm32f0
-	LOCM3_TARGET= stm32/f0
-	DEFS       += -DSTM32F0
-	FP_FLAGS   ?= -msoft-float
-	ARCH_FLAGS  = -mthumb -mcpu=cortex-m0 $(FP_FLAGS)
-	OOCD_BOARD ?= target/stm32f0x.cfg
-endif
-ifeq ($(ARCH),STM32F1)
-	LIBNAME     = opencm3_stm32f1
-	LOCM3_TARGET= stm32/f1
-	DEFS       += -DSTM32F1
-	FP_FLAGS   ?= -msoft-float
-	ARCH_FLAGS  = -mthumb -mcpu=cortex-m3 $(FP_FLAGS) -mfix-cortex-m3-ldrd
-	OOCD_BOARD ?= target/stm32f1x.cfg
-endif
+LIBNAME     = opencm3_stm32f0
+LOCM3_TARGET= stm32/f0
+DEFS       += -DSTM32F0
+FP_FLAGS   ?= -msoft-float
+ARCH_FLAGS  = -mthumb -mcpu=cortex-m0 $(FP_FLAGS)
 
 LIBNAME        ?= opencm3_stm32f0
 LOCM3_TARGET   ?= stm32/f0
@@ -64,13 +53,6 @@ else
 endif
 
 ####################################################################
-# OpenOCD specific variables
-
-OOCD           ?= openocd
-OOCD_INTERFACE ?= interface/cmsis-dap.cfg
-OOCD_BOARD     ?= target/stm32f0x.cfg
-
-####################################################################
 # Executables
 
 PREFIX         ?= arm-none-eabi-
@@ -83,7 +65,6 @@ AS             := $(PREFIX)as
 OBJCOPY        := $(PREFIX)objcopy
 OBJDUMP        := $(PREFIX)objdump
 GDB            := $(PREFIX)gdb
-STFLASH         = $(shell which st-flash)
 
 ####################################################################
 # Source files
@@ -201,10 +182,6 @@ locm3: $(LIB_DIR)/lib$(LIBNAME).a
 clean::
 	@#printf "  CLEAN\n"
 	$(Q)$(RM) *.o *.d *.elf *.bin *.hex *.srec *.list *.map
-
-%.stlink-flash: %.bin
-	@printf "  FLASH  $<\n"
-	$(Q)$(STFLASH) write $(*).bin 0x08000000
 
 %.flash: %.elf
 	@printf "  FLASH   $<\n"

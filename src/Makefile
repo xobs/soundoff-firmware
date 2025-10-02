@@ -16,11 +16,15 @@
 
 -include local.mk
 
-BINARY          = DAP42
+BINARY          = soundoff
 OPENCM3_DIR     = ../libopencm3
 
 TARGET         ?= STM32F042
-include targets.mk
+
+TARGET_COMMON_DIR  := ./stm32f042
+TARGET_SPEC_DIR    := ./stm32f042/soundoff
+LDSCRIPT           ?= ./stm32f042/stm32f042x6.ld
+ARCH                = STM32F0
 
 DFU_UTIL       ?= dfu-util
 DFUSE_VID_PID  := 0483:df11
@@ -52,12 +56,6 @@ dfu-flash: $(BINARY).dfu-flash
 size: $(OBJS) $(BINARY).elf
 	@$(PREFIX)size $(OBJS) $(BINARY).elf
 
-debug: $(BINARY).elf
-	-$(GDB) --tui --eval "target remote | $(OOCD) -f $(OOCD_INTERFACE) -f $(OOCD_BOARD) -f ../openocd/debug.cfg" $(BINARY).elf
-
-reset:
-	$(OOCD) -f $(OOCD_INTERFACE) -f $(OOCD_BOARD) -c "init; reset halt; reset; shutdown"
-
 clean::
 	@rm -f $(OBJS)
 	@rm -f $(DEPS)
@@ -66,7 +64,6 @@ SRCS           := $(wildcard *.c)
 SRCS           += $(wildcard DAP/*.c)
 SRCS           += $(wildcard USB/*.c)
 SRCS           += $(wildcard DFU/*.c)
-SRCS           += $(wildcard CAN/*.c)
 SRCS           += $(wildcard $(TARGET_COMMON_DIR)/*.c)
 SRCS           += $(wildcard $(TARGET_COMMON_DIR)/DAP/*.c)
 SRCS           += $(wildcard $(TARGET_COMMON_DIR)/USB/*.c)
@@ -91,3 +88,8 @@ CPPFLAGS       += -I$(TARGET_COMMON_DIR)/
 CPPFLAGS       += -I$(TARGET_SPEC_DIR)/
 
 .PHONY         += debug size dfuse-flash dfu-flash reset
+
+
+ifeq (,$(filter clean,$(MAKECMDGOALS)))
+-include *.d
+endif

@@ -174,5 +174,6 @@ clean:
 	rm -rf $(BUILD_DIR) $(GENERATED_BINS)
 
 .PHONY: all clean flash
--include $(OBJS:.o=.d)
 
+-include $(OBJS:.o=.d)
+-include *.d
