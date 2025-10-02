@@ -30,14 +30,13 @@
 #include "USB/dfu.h"
 #include "USB/winusb.h"
 
-#include "DAP/app.h"
-#include "DAP/CMSIS_DAP_hal.h"
 #include "DFU/DFU.h"
 
 #include "tick.h"
-#include "retarget.h"
 
-extern void initialise_monitor_handles(void);
+// Shut down power if we don't receive a SOF packet
+// within this time period.
+#define SHUTDOWN_TIME_MS 5000
 
 static inline uint32_t millis(void)
 {
@@ -63,7 +62,7 @@ static inline void wait_ms(uint32_t duration_ms)
     }
 }
 
-static bool do_reset_to_dfu = false;
+static volatile bool do_reset_to_dfu = false;
 static void on_dfu_request(void)
 {
     do_reset_to_dfu = true;
@@ -73,6 +72,17 @@ usbd_device *usbd_dev = NULL;
 void USB_IRQ_NAME(void)
 {
     usbd_poll(usbd_dev);
+}
+
+// The number of millis that we last saw a "SOF" packet.
+static volatile uint32_t last_sof_millis = 0;
+
+// Turn the power switch on. Additionally, reset any timer
+// that is running that's trying to turn the switch off.
+static void saw_sof(void)
+{
+    last_sof_millis = millis();
+    controlled_power_on();
 }
 
 int main(void)
@@ -88,22 +98,15 @@ int main(void)
     gpio_setup();
     led_num(0);
 
-    if (SEMIHOSTING)
-    {
-        initialise_monitor_handles();
-    }
-
     led_num(1);
 
     {
         char serial[USB_SERIAL_NUM_LENGTH + 1];
         desig_get_unique_id_as_string(serial, USB_SERIAL_NUM_LENGTH + 1);
         cmp_set_usb_serial_number(serial);
-        DAP_app_set_serial_number(serial);
     }
 
     usbd_dev = cmp_usb_setup();
-    DAP_app_setup(usbd_dev, &on_dfu_request);
 
     if (DFU_AVAILABLE)
     {
@@ -115,11 +118,13 @@ int main(void)
         winusb_setup(usbd_dev);
     }
 
+    cmp_usb_register_sof_callback(saw_sof);
+
     tick_start();
 
-    // /* Enable the watchdog to enable DFU recovery from bad firmware images */
-    // iwdg_set_period_ms(1000);
-    // iwdg_start();
+    /* Enable the watchdog to enable DFU recovery from bad firmware images */
+    iwdg_set_period_ms(1000);
+    iwdg_start();
 
     /* Enable USB */
     nvic_enable_irq(USB_NVIC_LINE);
@@ -128,23 +133,20 @@ int main(void)
     {
         iwdg_reset();
 
-        // Handle DAP
-        DAP_app_update();
+        // Handle resetting to the bootloader
         if (do_reset_to_dfu && DFU_AVAILABLE)
         {
-            /* Blink 3 times to indicate reset */
-            int x;
-            for (x = 0; x < 3; x++)
-            {
-                iwdg_reset();
-                led_num(7);
-                wait_ms(150);
-                led_num(0);
-                wait_ms(150);
-                iwdg_reset();
-            }
-
             DFU_reset_and_jump_to_bootloader();
+        }
+
+        // Turn off the power if it's exceeded the
+        // shutdown timer.
+        // Note that if this wraps, that will be fine since
+        // we only turn ON the power when a SOF packet is
+        // received.
+        if ((last_sof_millis - millis()) > SHUTDOWN_TIME_MS)
+        {
+            controlled_power_off();
         }
     }
 

@@ -36,6 +36,5 @@ $(BUILD_DIR):
 
 soundoff.bin: | $(BUILD_DIR)
 	@printf "  BUILD $(@)\n"
-	$(Q)$(MAKE) TARGET=STM32F042 -C src/ clean
-	$(Q)$(MAKE) TARGET=STM32F042 -C src/
+	$(Q)$(MAKE) -C src/
 	$(Q)cp src/soundoff.bin $(BUILD_DIR)/$(@)

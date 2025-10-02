@@ -19,10 +19,12 @@
 #ifndef TARGET_H_INCLUDED
 #define TARGET_H_INCLUDED
 
-extern void cpu_setup(void);
-extern void clock_setup(void);
-extern void gpio_setup(void);
-extern void led_num(uint8_t value);
-extern void led_bit(uint8_t position, bool state);
+void cpu_setup(void);
+void clock_setup(void);
+void gpio_setup(void);
+void led_num(uint8_t value);
+void led_bit(uint8_t position, bool state);
+void controlled_power_on(void);
+void controlled_power_off(void);
 
 #endif

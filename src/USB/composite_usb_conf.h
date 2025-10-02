@@ -28,9 +28,6 @@
 enum
 {
     ENDP_CONTROL_OUT = 0x00,
-#if HID_AVAILABLE
-    ENDP_HID_REPORT_OUT,
-#endif
 
     HIGHEST_OUT_ENDPOINT
 };
@@ -38,18 +35,12 @@ enum
 enum
 {
     ENDP_CONTROL_IN = 0x80,
-#if HID_AVAILABLE
-    ENDP_HID_REPORT_IN,
-#endif
 
     HIGHEST_IN_ENDPOINT,
 };
 
 enum
 {
-#if HID_AVAILABLE
-    INTF_HID,
-#endif
 #if DFU_AVAILABLE
     INTF_DFU,
 #endif
@@ -60,9 +51,6 @@ enum
     STR_NONE = 0,
     STR_MANUFACTURER,
     STR_PRODUCT,
-#if HID_AVAILABLE
-    STR_HID_INTF = STR_PRODUCT,
-#endif
     STR_SERIAL,
 #if DFU_AVAILABLE
     STR_DFU_INTF,

@@ -26,10 +26,8 @@
 #include "composite_usb_conf.h"
 #include "usb_setup.h"
 
-#include "hid_defs.h"
 #include "misc_defs.h"
 
-#include "hid.h"
 #include "dfu.h"
 
 #include "config.h"
@@ -44,13 +42,7 @@ _Static_assert((1 + NUM_OUT_ENDPOINTS <= 8), "Too many OUT endpoints for USB cor
 
 #define CONTROL_PMA_USAGE 128
 
-#if HID_AVAILABLE
-#define HID_PMA_USAGE (2 * USB_HID_MAX_PACKET_SIZE)
-#else
-#define HID_PMA_USAGE 0
-#endif
-
-#define TOTAL_PMA_USAGE (CONTROL_PMA_USAGE + HID_PMA_USAGE)
+#define TOTAL_PMA_USAGE (CONTROL_PMA_USAGE)
 
 #define MAX_USB_PMA_SIZE USB_PMA_SIZE
 
@@ -73,44 +65,6 @@ static const struct usb_device_descriptor dev = {
     .bNumConfigurations = 1,
 };
 
-#if HID_AVAILABLE
-static const struct usb_endpoint_descriptor hid_endpoints[] = {
-    {
-        .bLength = USB_DT_ENDPOINT_SIZE,
-        .bDescriptorType = USB_DT_ENDPOINT,
-        .bEndpointAddress = ENDP_HID_REPORT_IN,
-        .bmAttributes = USB_ENDPOINT_ATTR_INTERRUPT,
-        .wMaxPacketSize = USB_HID_MAX_PACKET_SIZE,
-        .bInterval = 1,
-    },
-    {
-        .bLength = USB_DT_ENDPOINT_SIZE,
-        .bDescriptorType = USB_DT_ENDPOINT,
-        .bEndpointAddress = ENDP_HID_REPORT_OUT,
-        .bmAttributes = USB_ENDPOINT_ATTR_INTERRUPT,
-        .wMaxPacketSize = USB_HID_MAX_PACKET_SIZE,
-        .bInterval = 1,
-    },
-};
-
-static const struct usb_interface_descriptor hid_iface = {
-    .bLength = USB_DT_INTERFACE_SIZE,
-    .bDescriptorType = USB_DT_INTERFACE,
-    .bInterfaceNumber = INTF_HID,
-    .bAlternateSetting = 0,
-    .bNumEndpoints = 2,
-    .bInterfaceClass = USB_CLASS_HID,
-    .bInterfaceSubClass = 0,
-    .bInterfaceProtocol = 0,
-    .iInterface = STR_HID_INTF,
-
-    .endpoint = hid_endpoints,
-
-    .extra = &hid_function,
-    .extralen = sizeof(hid_function),
-};
-#endif
-
 #if DFU_AVAILABLE
 static const struct usb_interface_descriptor dfu_iface = {
     .bLength = USB_DT_INTERFACE_SIZE,
@@ -131,13 +85,6 @@ static const struct usb_interface_descriptor dfu_iface = {
 #endif
 
 static const struct usb_interface interfaces[] = {
-#if HID_AVAILABLE
-    /* HID interface */
-    {
-        .num_altsetting = 1,
-        .altsetting = &hid_iface,
-    },
-#endif
 #if DFU_AVAILABLE
     /* DFU interface */
     {
@@ -163,8 +110,8 @@ static const struct usb_config_descriptor config = {
 static char serial_number[USB_SERIAL_NUM_LENGTH + 1] = "000000000000000000000000";
 
 static const char *usb_strings[] = {
-    [STR_MANUFACTURER - 1] = "Devanarchy",
-    [STR_PRODUCT - 1] = (PRODUCT_NAME " CMSIS-DAP"),
+    [STR_MANUFACTURER - 1] = "Xobs",
+    [STR_PRODUCT - 1] = (PRODUCT_NAME),
     [STR_SERIAL - 1] = serial_number,
 #if DFU_AVAILABLE
     [STR_DFU_INTF - 1] = (PRODUCT_NAME " DFU"),

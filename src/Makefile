@@ -89,7 +89,6 @@ CPPFLAGS       += -I$(TARGET_SPEC_DIR)/
 
 .PHONY         += debug size dfuse-flash dfu-flash reset
 
-
 ifeq (,$(filter clean,$(MAKECMDGOALS)))
 -include *.d
 endif

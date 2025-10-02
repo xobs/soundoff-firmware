@@ -29,9 +29,6 @@
 #define nBOOT0_GPIO_PORT GPIOB
 #define nBOOT0_GPIO_PIN GPIO8
 
-#define HID_AVAILABLE 1
 #define WINUSB_AVAILABLE 1
-
-#define LED_OPEN_DRAIN 1
 
 #endif
