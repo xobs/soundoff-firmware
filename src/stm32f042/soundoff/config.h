@@ -19,24 +19,18 @@
 #ifndef CONFIG_H_INCLUDED
 #define CONFIG_H_INCLUDED
 
-#define PRODUCT_NAME "DAP42"
+#define PRODUCT_NAME "Soundoff"
 #define REMAP_USB 1
 #define USB_NVIC_LINE NVIC_USB_IRQ
 #define USB_IRQ_NAME usb_isr
-
-#define DEFAULT_BAUDRATE 115200
 
 #define DFU_AVAILABLE 1
 #define nBOOT0_GPIO_CLOCK RCC_GPIOB
 #define nBOOT0_GPIO_PORT GPIOB
 #define nBOOT0_GPIO_PIN GPIO8
 
-#define BULK_AVAILABLE 0
 #define HID_AVAILABLE 1
 #define WINUSB_AVAILABLE 1
-
-/* Word size for usart_recv and usart_send */
-typedef uint8_t usart_word_t;
 
 #define LED_OPEN_DRAIN 1
 

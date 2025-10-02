@@ -50,13 +50,7 @@ _Static_assert((1 + NUM_OUT_ENDPOINTS <= 8), "Too many OUT endpoints for USB cor
 #define HID_PMA_USAGE 0
 #endif
 
-#if BULK_AVAILABLE
-#define BULK_PMA_USAGE (2 * USB_BULK_MAX_PACKET_SIZE)
-#else
-#define BULK_PMA_USAGE 0
-#endif
-
-#define TOTAL_PMA_USAGE (CONTROL_PMA_USAGE + HID_PMA_USAGE + BULK_PMA_USAGE)
+#define TOTAL_PMA_USAGE (CONTROL_PMA_USAGE + HID_PMA_USAGE)
 
 #define MAX_USB_PMA_SIZE USB_PMA_SIZE
 
@@ -117,49 +111,6 @@ static const struct usb_interface_descriptor hid_iface = {
 };
 #endif
 
-#if BULK_AVAILABLE
-static const struct usb_endpoint_descriptor bulk_endpoints[] = {
-    {
-        .bLength = USB_DT_ENDPOINT_SIZE,
-        .bDescriptorType = USB_DT_ENDPOINT,
-        .bEndpointAddress = ENDP_BULK_OUT,
-        .bmAttributes = USB_ENDPOINT_ATTR_BULK,
-        .wMaxPacketSize = USB_BULK_MAX_PACKET_SIZE,
-        .bInterval = 1,
-    },
-    {
-        .bLength = USB_DT_ENDPOINT_SIZE,
-        .bDescriptorType = USB_DT_ENDPOINT,
-        .bEndpointAddress = ENDP_BULK_IN,
-        .bmAttributes = USB_ENDPOINT_ATTR_BULK,
-        .wMaxPacketSize = USB_BULK_MAX_PACKET_SIZE,
-        .bInterval = 1,
-    },
-    {
-        .bLength = USB_DT_ENDPOINT_SIZE,
-        .bDescriptorType = USB_DT_ENDPOINT,
-        .bEndpointAddress = ENDP_BULK_IN_SWO,
-        .bmAttributes = USB_ENDPOINT_ATTR_BULK,
-        .wMaxPacketSize = USB_BULK_MAX_PACKET_SIZE,
-        .bInterval = 1,
-    },
-};
-
-static const struct usb_interface_descriptor bulk_iface = {
-    .bLength = USB_DT_INTERFACE_SIZE,
-    .bDescriptorType = USB_DT_INTERFACE,
-    .bInterfaceNumber = INTF_BULK,
-    .bAlternateSetting = 0,
-    .bNumEndpoints = 2,
-    .bInterfaceClass = USB_CLASS_VENDOR,
-    .bInterfaceSubClass = 0,
-    .bInterfaceProtocol = 0,
-    .iInterface = STR_BULK_INTF,
-
-    .endpoint = bulk_endpoints,
-};
-#endif
-
 #if DFU_AVAILABLE
 static const struct usb_interface_descriptor dfu_iface = {
     .bLength = USB_DT_INTERFACE_SIZE,
@@ -194,14 +145,6 @@ static const struct usb_interface interfaces[] = {
         .altsetting = &dfu_iface,
     },
 #endif
-#if BULK_AVAILABLE
-    /* Bulk interface */
-    {
-        .num_altsetting = 1,
-        .altsetting = &bulk_iface,
-        // .iface_assoc = &bulk_assoc,
-    },
-#endif
 };
 
 static const struct usb_config_descriptor config = {
@@ -225,10 +168,6 @@ static const char *usb_strings[] = {
     [STR_SERIAL - 1] = serial_number,
 #if DFU_AVAILABLE
     [STR_DFU_INTF - 1] = (PRODUCT_NAME " DFU"),
-#endif
-#if BULK_AVAILABLE
-    [STR_BULK_INTF_ASSOC_DESC - 1] = "CMSIS-DAP Bulk",
-    [STR_BULK_INTF - 1] = "CMSIS-DAP v2",
 #endif
 };
 

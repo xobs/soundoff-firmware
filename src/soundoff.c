@@ -110,7 +110,7 @@ int main(void)
         dfu_setup(usbd_dev, on_dfu_request);
     }
 
-    if (WINUSB_AVAILABLE && (DFU_AVAILABLE || BULK_AVAILABLE))
+    if (WINUSB_AVAILABLE && DFU_AVAILABLE)
     {
         winusb_setup(usbd_dev);
     }

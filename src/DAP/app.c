@@ -27,9 +27,6 @@
 #include "USB/hid.h"
 #endif
 #include "DAP/app.h"
-#if BULK_AVAILABLE
-#include "USB/bulk.h"
-#endif
 
 enum UsbBufferKind
 {
@@ -37,10 +34,6 @@ enum UsbBufferKind
 #if HID_AVAILABLE
     BUFFER_KIND_HID,
     BUFFER_KIND_HID_RESPONSE,
-#endif
-#if BULK_AVAILABLE
-    BUFFER_KIND_BULK,
-    BUFFER_KIND_BULK_RESPONSE,
 #endif
 };
 
@@ -62,7 +55,7 @@ static volatile uint8_t outbox_head;
 
 static GenericCallback dfu_request_callback = NULL;
 
-_Static_assert(HID_AVAILABLE || BULK_AVAILABLE,
+_Static_assert(HID_AVAILABLE,
                "CMSIS-DAP needs at at least one transport interface class");
 
 // Goal: When there is a message received, store it in a buffer and increment
@@ -82,34 +75,6 @@ static bool on_receive_hid_report(uint8_t *data, uint16_t len)
 static void on_send_hid_report(uint8_t *data, uint16_t *len)
 {
     if (outbox_head != process_head && buffers[outbox_head].buffer_kind == BUFFER_KIND_HID_RESPONSE)
-    {
-        memcpy((void *)data, (const void *)buffers[outbox_head].data,
-               buffers[outbox_head].size);
-        *len = buffers[outbox_head].size;
-
-        outbox_head = (outbox_head + 1) % DAP_PACKET_QUEUE_SIZE;
-    }
-    else
-    {
-        *len = 0;
-    }
-}
-#endif
-
-#if BULK_AVAILABLE
-static bool on_receive_bulk_report(uint8_t *data, uint16_t len)
-{
-    memcpy((void *)buffers[inbox_tail].data, (const void *)data, len);
-    buffers[inbox_tail].buffer_kind = BUFFER_KIND_BULK;
-    buffers[inbox_tail].size = len;
-    inbox_tail = (inbox_tail + 1) % DAP_PACKET_QUEUE_SIZE;
-
-    return ((inbox_tail + 1) % DAP_PACKET_QUEUE_SIZE) != outbox_head;
-}
-
-static void on_send_bulk_report(uint8_t *data, uint16_t *len)
-{
-    if (outbox_head != process_head && buffers[outbox_head].buffer_kind == BUFFER_KIND_BULK_RESPONSE)
     {
         memcpy((void *)data, (const void *)buffers[outbox_head].data,
                buffers[outbox_head].size);
@@ -193,12 +158,6 @@ bool DAP_app_update(void)
             buffers[process_head].size = DAP_PACKET_SIZE;
             break;
 #endif
-#if BULK_AVAILABLE
-        case BUFFER_KIND_BULK:
-            buffers[process_head].buffer_kind = BUFFER_KIND_BULK_RESPONSE;
-            buffers[process_head].size = response_bytes;
-            break;
-#endif
         default:
             asm("bkpt #1");
         }
@@ -213,25 +172,6 @@ bool DAP_app_update(void)
         (buffers[outbox_head].buffer_kind == BUFFER_KIND_HID_RESPONSE))
     {
         if (hid_send_report((const uint8_t *)buffers[outbox_head].data, buffers[outbox_head].size))
-        {
-            outbox_head = (outbox_head + 1) % DAP_PACKET_QUEUE_SIZE;
-            active = true;
-        }
-    }
-    __enable_irq();
-#endif
-
-#if BULK_AVAILABLE
-    // If the next packet to get transmitted is a bulk response packet,
-    // and if the bulk EP is idle, try to queue a transmission.
-    // Disable interrupts to avoid having the case where a packet comes in
-    // while we try to queue a new packet.
-    __disable_irq();
-    if (bulk_get_in_ep_idle() &&
-        (outbox_head != process_head) &&
-        (buffers[outbox_head].buffer_kind == BUFFER_KIND_BULK_RESPONSE))
-    {
-        if (bulk_send_report((const uint8_t *)buffers[outbox_head].data, buffers[outbox_head].size))
         {
             outbox_head = (outbox_head + 1) % DAP_PACKET_QUEUE_SIZE;
             active = true;

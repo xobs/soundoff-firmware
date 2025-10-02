@@ -30,7 +30,8 @@
 
 extern const struct winusb_platform_descriptor winusb_platform_capability_descriptor;
 
-struct winusb_extended_property_device_interface_guid_descriptor {
+struct winusb_extended_property_device_interface_guid_descriptor
+{
     uint32_t dwLength;
     uint16_t bcdVersion;
     uint16_t wIndex;
@@ -43,7 +44,8 @@ struct winusb_extended_property_device_interface_guid_descriptor {
     const uint16_t bPropertyData[];
 } __attribute__((packed));
 
-struct winusb_20_device_interface_guids_descriptor {
+struct winusb_20_device_interface_guids_descriptor
+{
     uint16_t wLength;
     uint16_t wDescriptorType;
     uint16_t wPropertyDataType;
@@ -53,7 +55,8 @@ struct winusb_20_device_interface_guids_descriptor {
     const uint16_t PropertyData[40];
 } __attribute__((packed));
 
-struct winusb_20_device_interface_guid_descriptor {
+struct winusb_20_device_interface_guid_descriptor
+{
     uint16_t wLength;
     uint16_t wDescriptorType;
     uint16_t wPropertyDataType;
@@ -63,24 +66,19 @@ struct winusb_20_device_interface_guid_descriptor {
     const uint16_t PropertyData[39];
 } __attribute__((packed));
 
-struct winusb_simple_descriptor_set {
+struct winusb_simple_descriptor_set
+{
     struct winusb_descriptor_set_header header;
 #if DFU_AVAILABLE
-    struct {
+    struct
+    {
         struct winusb_function_subset_header function;
         struct winusb_20_compatible_id_feature_descriptor wcid;
         struct winusb_20_device_interface_guids_descriptor guids;
     } dfu;
 #endif
-#if BULK_AVAILABLE
-    struct {
-        struct winusb_function_subset_header function;
-        struct winusb_20_compatible_id_feature_descriptor wcid;
-        struct winusb_20_device_interface_guids_descriptor guids;
-    } bulk;
-#endif
 } __attribute__((packed));
 
-extern void winusb_setup(usbd_device* usbd_dev);
+extern void winusb_setup(usbd_device *usbd_dev);
 
 #endif

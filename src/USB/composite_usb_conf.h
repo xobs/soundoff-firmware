@@ -22,9 +22,6 @@
 #include "usb_common.h"
 #include "config.h"
 
-#define USB_CDC_MAX_PACKET_SIZE 64
-#define USB_BULK_MAX_PACKET_SIZE 64
-#define USB_VCDC_MAX_PACKET_SIZE 64
 #define USB_HID_MAX_PACKET_SIZE 64
 #define USB_SERIAL_NUM_LENGTH 24
 
@@ -33,9 +30,6 @@ enum
     ENDP_CONTROL_OUT = 0x00,
 #if HID_AVAILABLE
     ENDP_HID_REPORT_OUT,
-#endif
-#if BULK_AVAILABLE
-    ENDP_BULK_OUT,
 #endif
 
     HIGHEST_OUT_ENDPOINT
@@ -46,10 +40,6 @@ enum
     ENDP_CONTROL_IN = 0x80,
 #if HID_AVAILABLE
     ENDP_HID_REPORT_IN,
-#endif
-#if BULK_AVAILABLE
-    ENDP_BULK_IN,
-    ENDP_BULK_IN_SWO,
 #endif
 
     HIGHEST_IN_ENDPOINT,
@@ -62,9 +52,6 @@ enum
 #endif
 #if DFU_AVAILABLE
     INTF_DFU,
-#endif
-#if BULK_AVAILABLE
-    INTF_BULK,
 #endif
 };
 
@@ -79,10 +66,6 @@ enum
     STR_SERIAL,
 #if DFU_AVAILABLE
     STR_DFU_INTF,
-#endif
-#if BULK_AVAILABLE
-    STR_BULK_INTF_ASSOC_DESC,
-    STR_BULK_INTF,
 #endif
 };
 
