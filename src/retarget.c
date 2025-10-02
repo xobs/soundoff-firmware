@@ -23,39 +23,46 @@
 
 #include "retarget.h"
 #include "console.h"
-#include "USB/vcdc.h"
 
 static uint32_t usart_stdout = NO_USART;
 static uint32_t usart_stderr = NO_USART;
-static uint32_t usart_stdin  = NO_USART;
+static uint32_t usart_stdin = NO_USART;
 
-void retarget(int file, uint32_t usart) {
-    if (file == STDOUT_FILENO) {
+void retarget(int file, uint32_t usart)
+{
+    if (file == STDOUT_FILENO)
+    {
         usart_stdout = usart;
-    } else if (file == STDERR_FILENO) {
+    }
+    else if (file == STDERR_FILENO)
+    {
         usart_stderr = usart;
-    } else if (file == STDIN_FILENO) {
+    }
+    else if (file == STDIN_FILENO)
+    {
         usart_stdin = usart;
     }
 }
 
 #if !SEMIHOSTING
 
-int _write(int file, char *ptr, int len) {
+int _write(int file, char *ptr, int len)
+{
     int sent;
 
     uint32_t usart = NO_USART;
-    if (file == STDOUT_FILENO) {
+    if (file == STDOUT_FILENO)
+    {
         usart = usart_stdout;
-    } else if (file == STDERR_FILENO) {
+    }
+    else if (file == STDERR_FILENO)
+    {
         usart = usart_stderr;
     }
 
-    if (usart == CONSOLE_USART) {
-        sent = console_send_buffered((uint8_t*)ptr, (size_t)len);
-        return sent;
-    } else if (usart == VIRTUAL_USART) {
-        sent = vcdc_send_buffered((uint8_t*)ptr, (size_t)len);
+    if (usart == CONSOLE_USART)
+    {
+        sent = console_send_buffered((uint8_t *)ptr, (size_t)len);
         return sent;
     }
 
@@ -65,30 +72,40 @@ int _write(int file, char *ptr, int len) {
 
 #endif
 
-void print_hex_nibble(uint8_t x) {
+void print_hex_nibble(uint8_t x)
+{
     uint8_t nibble = x & 0x0F;
     char nibble_char;
-    if (nibble < 10) {
+    if (nibble < 10)
+    {
         nibble_char = '0' + nibble;
-    } else {
+    }
+    else
+    {
         nibble_char = 'A' + (nibble - 10);
     }
     putchar(nibble_char);
 }
 
-void print_hex_byte(uint8_t x) {
+void print_hex_byte(uint8_t x)
+{
     print_hex_nibble(x >> 4);
     print_hex_nibble(x);
 }
 
-void print_hex(uint32_t x) {
+void print_hex(uint32_t x)
+{
     uint8_t i;
-    for (i=8; i > 0; i--) {
-        uint8_t nibble = (x >> ((i-1) * 4)) & 0xF;
+    for (i = 8; i > 0; i--)
+    {
+        uint8_t nibble = (x >> ((i - 1) * 4)) & 0xF;
         char nibble_char;
-        if (nibble < 10) {
+        if (nibble < 10)
+        {
             nibble_char = '0' + nibble;
-        } else {
+        }
+        else
+        {
             nibble_char = 'A' + (nibble - 10);
         }
 
@@ -96,14 +113,18 @@ void print_hex(uint32_t x) {
     }
 }
 
-void print(const char* s) {
-    while (*s != '\0') {
+void print(const char *s)
+{
+    while (*s != '\0')
+    {
         putchar(*s++);
     }
 }
 
-void println(const char* s) {
-    while (*s != '\0') {
+void println(const char *s)
+{
+    while (*s != '\0')
+    {
         putchar(*s++);
     }
     putchar('\r');

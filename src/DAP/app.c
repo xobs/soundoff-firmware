@@ -31,7 +31,8 @@
 #include "USB/bulk.h"
 #endif
 
-enum UsbBufferKind {
+enum UsbBufferKind
+{
     BUFFER_KIND_EMPTY,
 #if HID_AVAILABLE
     BUFFER_KIND_HID,
@@ -43,7 +44,8 @@ enum UsbBufferKind {
 #endif
 };
 
-struct usb_buffer {
+struct usb_buffer
+{
     uint8_t buffer_kind;
     uint8_t data[DAP_PACKET_SIZE];
     uint8_t size;
@@ -67,8 +69,9 @@ _Static_assert(HID_AVAILABLE || BULK_AVAILABLE,
 // the buffer counter.
 
 #if HID_AVAILABLE
-static bool on_receive_hid_report(uint8_t* data, uint16_t len) {
-    memcpy((void*)buffers[inbox_tail].data, (const void*)data, len);
+static bool on_receive_hid_report(uint8_t *data, uint16_t len)
+{
+    memcpy((void *)buffers[inbox_tail].data, (const void *)data, len);
     buffers[inbox_tail].buffer_kind = BUFFER_KIND_HID;
     buffers[inbox_tail].size = len;
     inbox_tail = (inbox_tail + 1) % DAP_PACKET_QUEUE_SIZE;
@@ -76,22 +79,27 @@ static bool on_receive_hid_report(uint8_t* data, uint16_t len) {
     return ((inbox_tail + 1) % DAP_PACKET_QUEUE_SIZE) != outbox_head;
 }
 
-static void on_send_hid_report(uint8_t* data, uint16_t* len) {
-    if (outbox_head != process_head && buffers[outbox_head].buffer_kind == BUFFER_KIND_HID_RESPONSE) {
-        memcpy((void*)data, (const void*)buffers[outbox_head].data,
+static void on_send_hid_report(uint8_t *data, uint16_t *len)
+{
+    if (outbox_head != process_head && buffers[outbox_head].buffer_kind == BUFFER_KIND_HID_RESPONSE)
+    {
+        memcpy((void *)data, (const void *)buffers[outbox_head].data,
                buffers[outbox_head].size);
         *len = buffers[outbox_head].size;
 
         outbox_head = (outbox_head + 1) % DAP_PACKET_QUEUE_SIZE;
-    } else {
+    }
+    else
+    {
         *len = 0;
     }
 }
 #endif
 
 #if BULK_AVAILABLE
-static bool on_receive_bulk_report(uint8_t* data, uint16_t len) {
-    memcpy((void*)buffers[inbox_tail].data, (const void*)data, len);
+static bool on_receive_bulk_report(uint8_t *data, uint16_t len)
+{
+    memcpy((void *)buffers[inbox_tail].data, (const void *)data, len);
     buffers[inbox_tail].buffer_kind = BUFFER_KIND_BULK;
     buffers[inbox_tail].size = len;
     inbox_tail = (inbox_tail + 1) % DAP_PACKET_QUEUE_SIZE;
@@ -99,32 +107,44 @@ static bool on_receive_bulk_report(uint8_t* data, uint16_t len) {
     return ((inbox_tail + 1) % DAP_PACKET_QUEUE_SIZE) != outbox_head;
 }
 
-static void on_send_bulk_report(uint8_t* data, uint16_t* len) {
-    if (outbox_head != process_head && buffers[outbox_head].buffer_kind == BUFFER_KIND_BULK_RESPONSE) {
-        memcpy((void*)data, (const void*)buffers[outbox_head].data,
+static void on_send_bulk_report(uint8_t *data, uint16_t *len)
+{
+    if (outbox_head != process_head && buffers[outbox_head].buffer_kind == BUFFER_KIND_BULK_RESPONSE)
+    {
+        memcpy((void *)data, (const void *)buffers[outbox_head].data,
                buffers[outbox_head].size);
         *len = buffers[outbox_head].size;
 
         outbox_head = (outbox_head + 1) % DAP_PACKET_QUEUE_SIZE;
-    } else {
+    }
+    else
+    {
         *len = 0;
     }
 }
 #endif
 
-uint32_t DAP_ProcessVendorCommand(const uint8_t* request, uint8_t* response) {
-    if (request[0] == ID_DAP_Vendor31) {
-        if (request[1] == 'D' && request[2] == 'F' && request[3] == 'U') {
+uint32_t DAP_ProcessVendorCommand(const uint8_t *request, uint8_t *response)
+{
+    if (request[0] == ID_DAP_Vendor31)
+    {
+        if (request[1] == 'D' && request[2] == 'F' && request[3] == 'U')
+        {
             response[0] = request[0];
             response[1] = DAP_OK;
-            if (dfu_request_callback) {
+            if (dfu_request_callback)
+            {
                 dfu_request_callback();
                 response[1] = DAP_OK;
-            } else {
+            }
+            else
+            {
                 response[1] = DAP_ERROR;
             }
             return ((4U << 16) | 2U);
-        } else {
+        }
+        else
+        {
             response[0] = request[0];
             response[1] = DAP_ERROR;
             return ((4U << 16) | 2U);
@@ -135,46 +155,52 @@ uint32_t DAP_ProcessVendorCommand(const uint8_t* request, uint8_t* response) {
     return ((1U << 16) | 1U);
 }
 
-void DAP_app_set_serial_number(const char* serial) {
+void DAP_app_set_serial_number(const char *serial)
+{
     DAP_SetSerial(serial);
 }
 
-static void DAP_app_reset(void) {
+static void DAP_app_reset(void)
+{
     inbox_tail = 0;
     process_head = 0;
     outbox_head = 0;
     DAP_Setup();
 }
 
-bool DAP_app_update(void) {
+bool DAP_app_update(void)
+{
     uint8_t response_buffer[DAP_PACKET_SIZE];
     bool active = false;
 
-    if (process_head != inbox_tail) {
+    if (process_head != inbox_tail)
+    {
         memset(response_buffer, 0, DAP_PACKET_SIZE);
         uint32_t result = DAP_ExecuteCommand((const uint8_t *)buffers[process_head].data,
                                              response_buffer);
         uint32_t response_bytes = result & 0xffff;
-        if (response_bytes > DAP_PACKET_SIZE) {
+        if (response_bytes > DAP_PACKET_SIZE)
+        {
             asm("bkpt #0");
         }
         memcpy((void *)buffers[process_head].data, response_buffer, response_bytes);
-        switch (buffers[process_head].buffer_kind) {
+        switch (buffers[process_head].buffer_kind)
+        {
 #if HID_AVAILABLE
-            case BUFFER_KIND_HID:
-                // Always pad to the full size to avoid issues on Windows
-                buffers[process_head].buffer_kind = BUFFER_KIND_HID_RESPONSE;
-                buffers[process_head].size = DAP_PACKET_SIZE;
-                break;
+        case BUFFER_KIND_HID:
+            // Always pad to the full size to avoid issues on Windows
+            buffers[process_head].buffer_kind = BUFFER_KIND_HID_RESPONSE;
+            buffers[process_head].size = DAP_PACKET_SIZE;
+            break;
 #endif
 #if BULK_AVAILABLE
-            case BUFFER_KIND_BULK:
-                buffers[process_head].buffer_kind = BUFFER_KIND_BULK_RESPONSE;
-                buffers[process_head].size = response_bytes;
-                break;
+        case BUFFER_KIND_BULK:
+            buffers[process_head].buffer_kind = BUFFER_KIND_BULK_RESPONSE;
+            buffers[process_head].size = response_bytes;
+            break;
 #endif
-            default:
-                asm("bkpt #1");
+        default:
+            asm("bkpt #1");
         }
         process_head = (process_head + 1) % DAP_PACKET_QUEUE_SIZE;
         active = true;
@@ -184,8 +210,10 @@ bool DAP_app_update(void) {
     __disable_irq();
     if (hid_get_in_ep_idle() &&
         (outbox_head != process_head) &&
-        (buffers[outbox_head].buffer_kind == BUFFER_KIND_HID_RESPONSE)) {
-        if (hid_send_report((const uint8_t*)buffers[outbox_head].data, buffers[outbox_head].size)) {
+        (buffers[outbox_head].buffer_kind == BUFFER_KIND_HID_RESPONSE))
+    {
+        if (hid_send_report((const uint8_t *)buffers[outbox_head].data, buffers[outbox_head].size))
+        {
             outbox_head = (outbox_head + 1) % DAP_PACKET_QUEUE_SIZE;
             active = true;
         }
@@ -201,8 +229,10 @@ bool DAP_app_update(void) {
     __disable_irq();
     if (bulk_get_in_ep_idle() &&
         (outbox_head != process_head) &&
-        (buffers[outbox_head].buffer_kind == BUFFER_KIND_BULK_RESPONSE)) {
-        if (bulk_send_report((const uint8_t*)buffers[outbox_head].data, buffers[outbox_head].size)) {
+        (buffers[outbox_head].buffer_kind == BUFFER_KIND_BULK_RESPONSE))
+    {
+        if (bulk_send_report((const uint8_t *)buffers[outbox_head].data, buffers[outbox_head].size))
+        {
             outbox_head = (outbox_head + 1) % DAP_PACKET_QUEUE_SIZE;
             active = true;
         }
@@ -213,15 +243,11 @@ bool DAP_app_update(void) {
     return active;
 }
 
-void DAP_app_setup(usbd_device* usbd_dev, GenericCallback on_dfu_request) {
-    DAP_Setup();
+void DAP_app_setup(usbd_device *usbd_dev, GenericCallback on_dfu_request)
+{
 #if HID_AVAILABLE
     hid_setup(usbd_dev, on_send_hid_report, on_receive_hid_report);
 #endif
-#if BULK_AVAILABLE
-    bulk_setup(usbd_dev, on_send_bulk_report, on_receive_bulk_report);
-#endif
     dfu_request_callback = on_dfu_request;
-
     cmp_usb_register_reset_callback(DAP_app_reset);
 }

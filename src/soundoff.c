@@ -28,7 +28,6 @@
 
 #include "USB/composite_usb_conf.h"
 #include "USB/cdc.h"
-#include "USB/vcdc.h"
 #include "USB/dfu.h"
 #include "USB/winusb.h"
 
@@ -106,11 +105,6 @@ int main(void)
     {
         initialise_monitor_handles();
     }
-    else if (VCDC_AVAILABLE)
-    {
-        retarget(STDOUT_FILENO, VIRTUAL_USART);
-        retarget(STDERR_FILENO, VIRTUAL_USART);
-    }
     else if (CDC_AVAILABLE)
     {
         retarget(STDOUT_FILENO, CONSOLE_USART);
@@ -133,11 +127,6 @@ int main(void)
     {
         cdc_uart_app_setup(usbd_dev, on_usb_activity, on_usb_activity);
         cdc_uart_app_set_timeout(1);
-    }
-
-    if (VCDC_AVAILABLE)
-    {
-        vcdc_app_setup(usbd_dev, on_usb_activity, on_usb_activity);
     }
 
     if (DFU_AVAILABLE)
@@ -166,11 +155,6 @@ int main(void)
         if (CDC_AVAILABLE)
         {
             cdc_uart_app_update();
-        }
-
-        if (VCDC_AVAILABLE)
-        {
-            vcdc_app_update();
         }
 
         // Handle DAP
