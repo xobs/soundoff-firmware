@@ -113,6 +113,9 @@ extern void usbd_register_resume_callback(usbd_device *usbd_dev,
 /** Registers a SOF callback */
 extern void usbd_register_sof_callback(usbd_device *usbd_dev,
 				       void (*callback)(void));
+/** Registers a ESOF callback */
+extern void usbd_register_esof_callback(usbd_device *usbd_dev,
+				       void (*callback)(void));
 
 typedef void (*usbd_control_complete_callback)(usbd_device *usbd_dev,
 		struct usb_setup_data *req);

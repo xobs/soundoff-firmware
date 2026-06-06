@@ -7,7 +7,8 @@ The original goal of this project was to turn off power to Bluetooth speakers th
 This repository is heavily based on the [dap42 project](https://github.com/devanlai/dap42), which is a full CMSIS-DAP debug firmware for STM32F042 and STM32F103 parts. This project removes support for all other targets and only enumerates as a USB control device with DFU support.
 
 ## Flash instructions
-The default method to upload new firmware is via [dfu-util](http://dfu-util.sourceforge.net/). The Makefile includes the `dfuse-flash` target to invoke dfu-util. dfu-util automatically detaches the dap42 firmware and uploads the firmware through the on-chip bootloader.
+
+The default method to upload new firmware is via [dfu-util](http://dfu-util.sourceforge.net/). The Makefile includes the `dfuse-flash` target to invoke dfu-util. dfu-util automatically detaches the Soundoff firmware and uploads the firmware through the on-chip bootloader.
 
 To flash via another debugger, use `make flash`.
 

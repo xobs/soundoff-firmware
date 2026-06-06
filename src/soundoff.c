@@ -32,36 +32,6 @@
 
 #include "DFU/DFU.h"
 
-#include "tick.h"
-
-// Shut down power if we don't receive a SOF packet
-// within this time period.
-#define SHUTDOWN_TIME_MS 1000
-
-static inline uint32_t millis(void)
-{
-    return get_ticks();
-}
-
-static inline void wait_ms(uint32_t duration_ms)
-{
-    uint32_t now = millis();
-    uint32_t end = now + duration_ms;
-    if (end < now)
-    {
-        end = 0xFFFFFFFFU - end;
-        while (millis() >= now)
-        {
-            __asm__("NOP");
-        }
-    }
-
-    while (millis() < end)
-    {
-        __asm__("NOP");
-    }
-}
-
 static volatile bool do_reset_to_dfu = false;
 static void on_dfu_request(void)
 {
@@ -74,15 +44,29 @@ void USB_IRQ_NAME(void)
     usbd_poll(usbd_dev);
 }
 
-// The number of millis that we last saw a "SOF" packet.
-static volatile uint32_t last_sof_millis = 0;
+// Keep track of how many SOF frames were missed.
+static volatile uint32_t missed_sof = 0;
+
+// If we miss more than this many SOF frames, consider
+// the host has gone to sleep.
+#define MAX_MISSED_SOF_FRAMES 3
 
 // Turn the power switch on. Additionally, reset any timer
 // that is running that's trying to turn the switch off.
 static void saw_sof(void)
 {
-    last_sof_millis = millis();
+    missed_sof = 0;
     controlled_power_on();
+}
+
+// If we missed an SOF frame, increase the counter and
+// turn off power if we miss enough of them.
+static void expected_sof(void)
+{
+    missed_sof++;
+    if (missed_sof > MAX_MISSED_SOF_FRAMES) {
+        controlled_power_off();
+    }
 }
 
 int main(void)
@@ -94,9 +78,7 @@ int main(void)
 
     cpu_setup();
     clock_setup();
-    tick_setup(1000);
     gpio_setup();
-    
 
     {
         char serial[USB_SERIAL_NUM_LENGTH + 1];
@@ -116,8 +98,8 @@ int main(void)
         winusb_setup(usbd_dev);
     }
 
-    tick_start();
     usbd_register_sof_callback(usbd_dev, saw_sof);
+    usbd_register_esof_callback(usbd_dev, expected_sof);
 
     /* Enable the watchdog to enable DFU recovery from bad firmware images */
     iwdg_set_period_ms(1000);
@@ -136,15 +118,15 @@ int main(void)
             DFU_reset_and_jump_to_bootloader();
         }
 
-        // Turn off the power if it's exceeded the
-        // shutdown timer.
-        // Note that if this wraps, that will be fine since
-        // we only turn ON the power when a SOF packet is
-        // received.
-        if ((millis() - last_sof_millis) > SHUTDOWN_TIME_MS)
-        {
-            controlled_power_off();
-        }
+        // // Turn off the power if it's exceeded the
+        // // shutdown timer.
+        // // Note that if this wraps, that will be fine since
+        // // we only turn ON the power when a SOF packet is
+        // // received.
+        // if ((millis() - last_sof_millis) > SHUTDOWN_TIME_MS)
+        // {
+        //     controlled_power_off();
+        // }
     }
 
     return 0;

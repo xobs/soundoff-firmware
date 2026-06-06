@@ -96,6 +96,11 @@ void usbd_register_sof_callback(usbd_device *usbd_dev, void (*callback)(void))
 	usbd_dev->user_callback_sof = callback;
 }
 
+void usbd_register_esof_callback(usbd_device *usbd_dev, void (*callback)(void))
+{
+	usbd_dev->user_callback_esof = callback;
+}
+
 void usbd_register_extra_string(usbd_device *usbd_dev, int index, const char* string)
 {
     /*

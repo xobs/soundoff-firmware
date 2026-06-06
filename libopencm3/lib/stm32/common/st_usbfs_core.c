@@ -289,9 +289,22 @@ void st_usbfs_poll(usbd_device *dev)
 		}
 	}
 
+	if (istr & USB_ISTR_ESOF) {
+		USB_CLR_ISTR_ESOF();
+		if (dev->user_callback_esof) {
+			dev->user_callback_esof();
+		}
+	}
+
 	if (dev->user_callback_sof) {
 		*USB_CNTR_REG |= USB_CNTR_SOFM;
 	} else {
 		*USB_CNTR_REG &= ~USB_CNTR_SOFM;
+	}
+
+	if (dev->user_callback_esof) {
+		*USB_CNTR_REG |= USB_CNTR_ESOFM;
+	} else {
+		*USB_CNTR_REG &= ~USB_CNTR_ESOFM;
 	}
 }

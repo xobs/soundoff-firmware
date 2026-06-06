@@ -38,3 +38,6 @@ soundoff.bin: | $(BUILD_DIR)
 	@printf "  BUILD $(@)\n"
 	$(Q)$(MAKE) -C src/
 	$(Q)cp src/soundoff.bin $(BUILD_DIR)/$(@)
+
+dfuse-flash:
+	$(Q)$(MAKE) -C src dfuse-flash
