@@ -47,6 +47,16 @@ void USB_IRQ_NAME(void)
 // Keep track of how many SOF frames were missed.
 static volatile uint32_t missed_sof = 0;
 
+static volatile uint8_t current_usb_address;
+
+static void reset_address(void) {
+    current_usb_address = 0;
+}
+
+static void set_address(uint8_t address) {
+    current_usb_address = address;
+}
+
 // If we miss more than this many SOF frames, consider
 // the host has gone to sleep.
 #define MAX_MISSED_SOF_FRAMES 3
@@ -56,7 +66,9 @@ static volatile uint32_t missed_sof = 0;
 static void saw_sof(void)
 {
     missed_sof = 0;
-    controlled_power_on();
+    if (current_usb_address != 0) {
+        controlled_power_on();
+    }
 }
 
 // If we missed an SOF frame, increase the counter and
@@ -100,6 +112,8 @@ int main(void)
 
     usbd_register_sof_callback(usbd_dev, saw_sof);
     usbd_register_esof_callback(usbd_dev, expected_sof);
+    usbd_register_reset_callback(usbd_dev, reset_address);
+    usbd_register_set_address_callback(usbd_dev, set_address);
 
     /* Enable the watchdog to enable DFU recovery from bad firmware images */
     iwdg_set_period_ms(1000);

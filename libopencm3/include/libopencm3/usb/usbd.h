@@ -104,6 +104,9 @@ extern usbd_device * usbd_init(const usbd_driver *driver,
 /** Registers a reset callback */
 extern void usbd_register_reset_callback(usbd_device *usbd_dev,
 					 void (*callback)(void));
+/** Registers a callback when the address is set */
+extern void usbd_register_set_address_callback(usbd_device *usbd_dev,
+					 void (*callback)(uint8_t));
 /** Registers a suspend callback */
 extern void usbd_register_suspend_callback(usbd_device *usbd_dev,
 					   void (*callback)(void));

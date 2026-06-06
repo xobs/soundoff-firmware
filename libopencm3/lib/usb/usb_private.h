@@ -60,6 +60,7 @@ struct _usbd_device {
 
 	/* User callback functions for various USB events */
 	void (*user_callback_reset)(void);
+	void (*user_callback_set_address)(uint8_t);
 	void (*user_callback_suspend)(void);
 	void (*user_callback_resume)(void);
 	void (*user_callback_sof)(void);

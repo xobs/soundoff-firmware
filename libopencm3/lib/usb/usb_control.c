@@ -306,6 +306,9 @@ void _usbd_control_in(usbd_device *usbd_dev, uint8_t ea)
 		if ((req->bmRequestType == 0) &&
 		    (req->bRequest == USB_REQ_SET_ADDRESS)) {
 			usbd_dev->driver->set_address(usbd_dev, req->wValue);
+			if (usbd_dev->user_callback_set_address) {
+				usbd_dev->user_callback_set_address(req->wValue);
+			}
 		}
 		usbd_dev->control_state.state = IDLE;
 		break;
